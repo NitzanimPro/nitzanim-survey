@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>בדיקת חיבור</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 24px 16px; line-height: 1.6; }
+    h1 { font-size: 1.3rem; }
+    .row { border: 1px solid #ccc; border-radius: 8px; padding: 12px 14px; margin: 12px 0; }
+    .ok { color: #1f6f5c; font-weight: 700; }
+    .fail { color: #b3261e; font-weight: 700; }
+    code { direction: ltr; unicode-bidi: embed; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <h1>בדיקת חיבור ל-API (אב-טיפוס)</h1>
+  <div class="row"><div>GET</div><div id="get">בודק...</div></div>
+  <div class="row"><div>POST (text/plain)</div><div id="post">בודק...</div></div>
+  <script src="config.js"></script>
+  <script>
+    (function () {
+      var url = window.NZ_CONFIG.API_URL;
+      function show(id, ok, detail) {
+        var el = document.getElementById(id);
+        el.innerHTML = '';
+        var s = document.createElement('span');
+        s.className = ok ? 'ok' : 'fail';
+        s.textContent = ok ? 'עובד' : 'נכשל';
+        el.appendChild(s);
+        var c = document.createElement('div');
+        var code = document.createElement('code');
+        code.textContent = detail;
+        c.appendChild(code);
+        el.appendChild(c);
+      }
+      function check(id, promise) {
+        promise
+          .then(function (r) { return r.text(); })
+          .then(function (text) {
+            var data;
+            try { data = JSON.parse(text); } catch (e) { return show(id, false, 'not JSON: ' + text.slice(0, 120)); }
+            show(id, data && data.ok === true && data.data && data.data.pong === true, text);
+          })
+          .catch(function (err) { show(id, false, String(err)); });
+      }
+      if (!url || url.indexOf('PASTE') === 0) {
+        show('get', false, 'API_URL not set in config.js');
+        show('post', false, 'API_URL not set in config.js');
+        return;
+      }
+      check('get', fetch(url + '?action=ping'));
+      check('post', fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'ping' })
+      }));
+    })();
+  </script>
+</body>
+</html>
