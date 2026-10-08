@@ -42,6 +42,13 @@
 
   var renderedThemeIndex = -1;
 
+  var SENDING_HINT = 'נא לא לסגור את המסך עד שההודעה תופיע.';
+
+  function setSendingHint_(text) {
+    var hint = document.getElementById('nz-sending-hint');
+    if (hint) hint.textContent = text;
+  }
+
   // Shown while the final submission is in flight; it can take a while when
   // Google is slow, so it says so and asks not to close the page.
   function renderSendingScreen_() {
@@ -55,7 +62,8 @@
     title.textContent = 'שולח...';
     var hint = document.createElement('p');
     hint.className = 'nz-wait__hint';
-    hint.textContent = 'נא לא לסגור את המסך עד שההודעה תופיע.';
+    hint.id = 'nz-sending-hint';
+    hint.textContent = SENDING_HINT;
     wrap.appendChild(title);
     wrap.appendChild(hint);
     app.appendChild(wrap);
@@ -953,9 +961,19 @@
   // failure - answers stay safe in memory regardless, and the flow keeps
   // moving forward. Retries silently with backoff, then gives up quietly;
   // only a failed FINAL submission is ever shown to the student.
+  // A whole class finishes a theme at about the same moment; spreading the
+  // first send over a few seconds keeps them from queueing on the server's
+  // write lock. Invisible to the student (the screen has already moved on).
+  var CHECKPOINT_JITTER_MS = 5000;
+
   function saveCheckpointWithRetry_(lastThemeCompleted, attempt) {
-    attempt = attempt || 1;
-    lastThemeCompletedSoFar = lastThemeCompleted;
+    if (!attempt) {
+      lastThemeCompletedSoFar = lastThemeCompleted;
+      setTimeout(function () {
+        if (!finalSubmitted) saveCheckpointWithRetry_(lastThemeCompleted, 1);
+      }, Math.random() * CHECKPOINT_JITTER_MS);
+      return;
+    }
     var payload = buildProgressPayload_(lastThemeCompleted);
     var sent = trackSend_(payload);
     saveInFlight++;
@@ -966,7 +984,7 @@
       saveInFlight--;
       // Only transport problems are worth retrying; a rejection by the
       // server (e.g. the survey was closed) would just repeat.
-      if (attempt < 5 && isRetryableError_(error)) {
+      if (attempt < 5 && !finalSubmitted && isRetryableError_(error)) {
         setTimeout(function () {
           saveCheckpointWithRetry_(lastThemeCompleted, attempt + 1);
         }, 3000 * attempt);
@@ -1062,8 +1080,16 @@
     return text + ' (' + code + ')';
   }
 
-  function submitFinalAnswers_(lastThemeCompleted) {
-    renderSendingScreen_();
+  // The server may have saved the answers even when the response never made
+  // it back (the reply goes through a redirect that can fail on a flaky
+  // connection). Resubmitting is safe - the server upserts by session_id and
+  // keeps the first submission time - so retry automatically, and only show
+  // an error after several attempts.
+  var SUBMIT_MAX_ATTEMPTS = 5;
+
+  function submitFinalAnswers_(lastThemeCompleted, attempt) {
+    attempt = attempt || 1;
+    if (attempt === 1) renderSendingScreen_();
 
     var payload = buildProgressPayload_(lastThemeCompleted);
     trackSend_(payload);
@@ -1074,8 +1100,28 @@
       renderEndScreen_();
     }, function (error) {
       saveInFlight--;
-      renderSubmitError_(error, lastThemeCompleted);
+      if (isRetryableError_(error) && attempt < SUBMIT_MAX_ATTEMPTS) {
+        scheduleSubmitRetry_(lastThemeCompleted, attempt);
+      } else {
+        renderSubmitError_(error, lastThemeCompleted);
+      }
     });
+  }
+
+  function scheduleSubmitRetry_(lastThemeCompleted, attempt) {
+    var retry = function () {
+      setSendingHint_(SENDING_HINT);
+      submitFinalAnswers_(lastThemeCompleted, attempt + 1);
+    };
+    if (navigator.onLine === false) {
+      setSendingHint_('אין חיבור לאינטרנט. השליחה תימשך אוטומטית כשהחיבור יחזור. נא לא לסגור את המסך.');
+      window.addEventListener('online', function () {
+        setTimeout(retry, 1000);
+      }, { once: true });
+    } else {
+      setSendingHint_('החיבור איטי, מנסים שוב... נא לא לסגור את המסך.');
+      setTimeout(retry, 3000 * attempt);
+    }
   }
 
   function renderEndScreen_() {
@@ -1158,7 +1204,9 @@
     screen.appendChild(title2);
 
     var message = document.createElement('p');
-    message.textContent = 'התשובות שלך שמורות במכשיר, ואפשר לנסות שוב. ' + describeError_(error);
+    message.textContent = isRetryableError_(error)
+      ? 'לא קיבלנו אישור מהשרת. ייתכן שהתשובות כבר נשמרו, ואפשר לנסות שוב בבטחה. ' + describeError_(error)
+      : describeError_(error);
     screen.appendChild(message);
 
     var actions = document.createElement('div');
