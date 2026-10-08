@@ -28,8 +28,27 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    Api.getDefinition().then(onSurveyLoaded_, onLoadError_);
+    loadDefinition_(1);
   });
+
+  // Loading the survey is the first thing a student sees. An occasional failure
+  // or very slow answer from Google must not show an error: retry a few times
+  // first, and say so on the waiting screen.
+  var LOAD_MAX_ATTEMPTS = 4;
+
+  function loadDefinition_(attempt) {
+    Api.getDefinition().then(onSurveyLoaded_, function (error) {
+      if (isRetryableError_(error) && attempt < LOAD_MAX_ATTEMPTS) {
+        var hint = document.querySelector('.nz-wait__hint');
+        if (hint) hint.textContent = 'הטעינה מתעכבת, מנסים שוב...';
+        setTimeout(function () {
+          loadDefinition_(attempt + 1);
+        }, 2000 * attempt);
+        return;
+      }
+      onLoadError_(error);
+    });
+  }
 
   // Every screen replaces the contents of #app, but the browser keeps the old
   // scroll position (on phones the new screen often opened half-scrolled, with
