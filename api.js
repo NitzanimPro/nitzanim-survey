@@ -18,7 +18,8 @@ var Api = (function () {
     return error;
   }
 
-  function request_(action, payload) {
+  function request_(action, payload, options) {
+    options = options || {};
     var controller = new AbortController();
     var timer = setTimeout(function () {
       controller.abort();
@@ -30,6 +31,8 @@ var Api = (function () {
       body: JSON.stringify({ action: action, payload: payload }),
       credentials: 'omit',
       redirect: 'follow',
+      // keepalive lets the request outlive a closing page (body must stay < 64KB).
+      keepalive: options.keepalive === true,
       signal: controller.signal
     }).then(function (response) {
       return response.text();
@@ -57,6 +60,11 @@ var Api = (function () {
     },
     saveCheckpoint: function (payload) {
       return request_('saveCheckpoint', payload);
+    },
+    // Best-effort save when the page is being hidden or closed. Same action
+    // as a normal checkpoint; the caller ignores the result if the page is gone.
+    saveCheckpointOnExit: function (payload) {
+      return request_('saveCheckpoint', payload, { keepalive: true });
     },
     submit: function (payload) {
       return request_('submit', payload);

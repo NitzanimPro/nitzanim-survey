@@ -37,12 +37,12 @@
     var app = document.getElementById('app');
     app.innerHTML = '';
     var wrap = document.createElement('div');
-    wrap.className = 'nz-sending';
+    wrap.className = 'nz-wait';
     var title = document.createElement('p');
-    title.className = 'nz-sending__title';
+    title.className = 'nz-wait__title';
     title.textContent = 'שולח...';
     var hint = document.createElement('p');
-    hint.className = 'nz-sending__hint';
+    hint.className = 'nz-wait__hint';
     hint.textContent = 'נא לא לסגור את המסך עד שההודעה תופיע.';
     wrap.appendChild(title);
     wrap.appendChild(hint);
@@ -533,7 +533,8 @@
 
   function prefillDetailsForm_(form) {
     form.querySelector('#id_number').value = studentDetails.id_number;
-    setSegmentedValue_(document.getElementById('gender'), studentDetails.gender);
+    // The form is not attached to the document yet, so look inside it.
+    setSegmentedValue_(form.querySelector('#gender'), studentDetails.gender);
     if (surveyDefinition.collectCity) {
       form.querySelector('#city').value = studentDetails.city;
     }
@@ -932,11 +933,15 @@
   // only a failed FINAL submission is ever shown to the student.
   function saveCheckpointWithRetry_(lastThemeCompleted, attempt) {
     attempt = attempt || 1;
+    lastThemeCompletedSoFar = lastThemeCompleted;
     var payload = buildProgressPayload_(lastThemeCompleted);
     var sent = trackSend_(payload);
+    saveInFlight++;
     Api.saveCheckpoint(payload).then(function () {
+      saveInFlight--;
       markSaved_(sent);
     }, function (error) {
+      saveInFlight--;
       // Only transport problems are worth retrying; a rejection by the
       // server (e.g. the survey was closed) would just repeat.
       if (attempt < 5 && isRetryableError_(error)) {
@@ -979,6 +984,37 @@
     event.returnValue = '';
   });
 
+  // ---------- Last-chance save ----------
+  // Mobile browsers rarely show the beforeunload warning, so when the page is
+  // hidden or closed with unsaved answers, send one best-effort checkpoint.
+  // Guarded to keep server load low: only with unsaved answers, never while
+  // another save is in flight, and at most once per EXIT_SAVE_MIN_INTERVAL_MS
+  // (app switches and screen locks can fire this event repeatedly). The
+  // server upserts by session_id, so this never duplicates a row or
+  // overwrites a completed one.
+  var EXIT_SAVE_MIN_INTERVAL_MS = 30000;
+  var lastExitSaveAt = 0;
+  var saveInFlight = 0;
+  var lastThemeCompletedSoFar = '';
+
+  function saveOnExit_() {
+    if (!studentDetails || !hasUnsavedAnswers_() || saveInFlight > 0) return;
+    var now = Date.now();
+    if (now - lastExitSaveAt < EXIT_SAVE_MIN_INTERVAL_MS) return;
+    lastExitSaveAt = now;
+
+    var payload = buildProgressPayload_(lastThemeCompletedSoFar);
+    var sent = trackSend_(payload);
+    Api.saveCheckpointOnExit(payload).then(function () {
+      markSaved_(sent);
+    }, function () {});
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') saveOnExit_();
+  });
+  window.addEventListener('pagehide', saveOnExit_);
+
   // ---------- Error wording ----------
 
   function isRetryableError_(error) {
@@ -1009,10 +1045,13 @@
 
     var payload = buildProgressPayload_(lastThemeCompleted);
     trackSend_(payload);
+    saveInFlight++;
     Api.submit(payload).then(function () {
+      saveInFlight--;
       finalSubmitted = true;
       renderEndScreen_();
     }, function (error) {
+      saveInFlight--;
       renderSubmitError_(error, lastThemeCompleted);
     });
   }

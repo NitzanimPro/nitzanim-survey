@@ -129,7 +129,7 @@
   .nz-step__node { position: absolute; top: 0; inset-inline-start: 0; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
   .nz-step__node svg { width: 12px; height: 12px; color: var(--nz-white); }
   .nz-step__body { flex: 1; display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
-  .nz-step__num { font-family: var(--nz-mono); font-size: 12px; color: var(--nz-blue); margin-inline-end: 6px; }
+  .nz-step__num { font-family: var(--nz-mono); font-size: 12px; color: var(--nz-blue); margin-left: 12px; /* physical: the number is LTR, the gap must sit on its left, toward the label text */ }
   .nz-step--done .nz-step__node { background: var(--nz-blue); }
   .nz-step--done .nz-step__rail::after { background: var(--nz-light-blue); }
   .nz-step--active .nz-step__node { border: 2px solid var(--nz-blue); background: var(--nz-white); }
@@ -168,7 +168,10 @@
   .nz-q__text { margin: 8px 0 0; font-size: var(--nz-fs-question); font-weight: 700; line-height: 1.45; }
 
   /* ---------- Slider: discrete stops only ---------- */
-  .nz-scale { margin-top: var(--nz-s8); display: flex; flex-direction: column; }
+  /* The question body sits beside a 28px rail (16px + 12px gap). The scale and
+     the continue button pull back over it so they centre on the screen. */
+  .nz-scale { margin-top: var(--nz-s8); margin-inline-start: -28px; display: flex; flex-direction: column; }
+  .nz-q__body .nz-actions { margin-inline-start: -28px; }
   /* --nz-n (number of stops) is set from the server-provided scale_max, so
      stops and numbers share equal grid cells at any width. */
   .nz-scale__track { position: relative; display: grid; grid-template-columns: repeat(var(--nz-n, 6), 1fr); height: var(--nz-stop-hit); }
@@ -231,9 +234,10 @@
   .nz-h1 { font-size: var(--nz-fs-h1); font-weight: 800; margin: 0 0 6px; }
   .nz-subline { font-size: 15px; color: var(--nz-ink-2); margin: 0 0 20px; }
   .nz-status-message { text-align: center; padding-top: 20vh; color: var(--nz-ink-2); font-size: 15px; }
-  .nz-sending { text-align: center; padding: 20vh 24px 0; }
-  .nz-sending__title { margin: 0; font-size: 32px; font-weight: 700; color: var(--nz-navy); }
-  .nz-sending__hint { margin: 12px 0 0; font-size: 16px; color: var(--nz-ink-2); }
+  /* Full-screen waiting state (loading the survey, sending the answers). */
+  .nz-wait { text-align: center; padding: 20vh 24px 0; }
+  .nz-wait__title { margin: 0; font-size: 32px; font-weight: 700; color: var(--nz-navy); }
+  .nz-wait__hint { margin: 12px 0 0; font-size: 16px; color: var(--nz-ink-2); }
 
   /* ---------- Desktop ---------- */
   @media (min-width: 768px) {
@@ -244,7 +248,7 @@
     .nz-progress { gap: 6px; }
     .nz-main { max-width: 640px; margin-inline: auto; padding: 24px 0 40px; }
     .nz-q__text { font-size: 26px; line-height: 1.4; }
-    .nz-scale { margin-inline: 30px; }
+    .nz-scale { margin-inline: 2px 30px; }
     :root { --nz-stop-hit: 60px; }
     .nz-log__row { min-height: 48px; }
     .nz-log__text { font-size: 16px; }
