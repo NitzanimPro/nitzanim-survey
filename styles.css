@@ -1,0 +1,253 @@
+  :root {
+    /* brand colors (exact) */
+    --nz-navy: #1e305b;
+    --nz-blue: #097abe;
+    --nz-blue-2: #1e8bcb;
+    --nz-light-blue: #7bd3f7;
+    --nz-xlight-blue: #d6e8ff;
+    --nz-red: #c0202f;
+    --nz-white: #ffffff;
+
+    /* derived (alpha only) */
+    --nz-ink: var(--nz-navy);
+    --nz-ink-2: rgba(30, 48, 91, .72);
+    --nz-ink-disabled: rgba(30, 48, 91, .5);
+    --nz-on-dark-2: rgba(255, 255, 255, .86);
+    --nz-track-dark: rgba(255, 255, 255, .18);
+    --nz-rule-dark: rgba(123, 211, 247, .4);
+
+    /* type */
+    --nz-font: 'Heebo', system-ui, sans-serif;
+    --nz-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --nz-fs-display: 44px;
+    --nz-fs-numeral: 88px;
+    --nz-fs-thanks: 56px;
+    --nz-fs-h1: 28px;
+    --nz-fs-header: 22px;
+    --nz-fs-question: 21px;
+    --nz-fs-body: 17px;
+    --nz-fs-label: 15px;
+    --nz-fs-small: 14px;
+    --nz-fs-caption: 13px;
+    --nz-fs-eyebrow: 12px;
+
+    /* spacing */
+    --nz-s1: 4px;  --nz-s2: 8px;  --nz-s3: 12px; --nz-s4: 16px;
+    --nz-s5: 20px; --nz-s6: 24px; --nz-s7: 28px; --nz-s8: 36px; --nz-s10: 64px;
+    --nz-gutter: 20px;
+
+    /* radius & lines */
+    --nz-r-0: 0;
+    --nz-r-ctl: 6px;
+    --nz-line: 1px solid var(--nz-xlight-blue);
+    --nz-field-border: 1.5px solid var(--nz-blue-2);
+    --nz-focus-ring: 0 0 0 3px var(--nz-light-blue);
+
+    /* component sizes */
+    --nz-btn-w: 200px;
+    --nz-btn-h: 52px;
+    --nz-btn-secondary-h: 48px;
+    --nz-field-h: 52px;
+    --nz-stop-hit: 56px;
+    --nz-stop-dot: 14px;
+    --nz-thumb: 32px;
+    --nz-progress-h: 4px;
+    --nz-progress-gap: 4px;
+
+    --nz-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9' fill='none'%3E%3Cpath d='M1 1.5L7 7.5L13 1.5' stroke='%231e8bcb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { direction: rtl; }
+  body { margin: 0; font-family: var(--nz-font); color: var(--nz-ink); background: var(--nz-white); }
+  button, input, select { font-family: inherit; }
+  :focus-visible { outline: 3px solid var(--nz-light-blue); outline-offset: 2px; }
+  .nz-mono { font-family: var(--nz-mono); direction: ltr; unicode-bidi: isolate; }
+
+  .nz-main { padding: var(--nz-s6) var(--nz-gutter) var(--nz-s10); }
+
+  /* ---------- Top bar ---------- */
+  .nz-topbar {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--nz-navy);
+    padding: 16px var(--nz-gutter);
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .nz-topbar__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .nz-topbar__eyebrow { font-size: var(--nz-fs-eyebrow); font-weight: 600; letter-spacing: .02em; color: var(--nz-light-blue); }
+  .nz-topbar__title { font-size: var(--nz-fs-header); font-weight: 800; line-height: 1.2; color: var(--nz-white); }
+
+  /* ---------- Progress ---------- */
+  .nz-progress { display: flex; gap: var(--nz-progress-gap); }
+  .nz-progress__seg { flex: 1 1 0; height: var(--nz-progress-h); background: var(--nz-track-dark); overflow: hidden; }
+  .nz-progress__fill { height: 100%; background: var(--nz-light-blue); width: 0; transition: width .25s ease; }
+
+  /* ---------- Buttons ---------- */
+  .nz-actions { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: var(--nz-s8); }
+  .nz-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    width: var(--nz-btn-w); height: var(--nz-btn-h);
+    border: 0; border-radius: var(--nz-r-ctl);
+    font-size: 17px; font-weight: 700; text-decoration: none; cursor: pointer;
+  }
+  .nz-btn--primary { background: var(--nz-blue); color: var(--nz-white); }
+  .nz-btn--primary:hover { background: var(--nz-navy); }
+  .nz-btn--primary:disabled { background: var(--nz-xlight-blue); color: var(--nz-ink-disabled); cursor: not-allowed; }
+  .nz-btn--secondary { height: var(--nz-btn-secondary-h); background: var(--nz-white); color: var(--nz-navy); border: 1.5px solid var(--nz-navy); font-size: 16px; }
+  .nz-btn--on-dark { background: var(--nz-light-blue); color: var(--nz-navy); font-weight: 800; }
+  .nz-btn svg { width: 18px; height: 18px; }
+
+  /* ---------- Fields ---------- */
+  .nz-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; }
+  .nz-label { font-size: var(--nz-fs-label); font-weight: 700; }
+  .nz-label__optional { font-weight: 500; color: var(--nz-ink-2); }
+  .nz-help { font-size: var(--nz-fs-caption); color: var(--nz-ink-2); }
+  .nz-input, .nz-select {
+    height: var(--nz-field-h); padding-inline: 14px;
+    border: var(--nz-field-border); border-radius: var(--nz-r-ctl);
+    background: var(--nz-white); color: var(--nz-ink); font-size: 17px; width: 100%;
+  }
+  .nz-select { appearance: none; padding-inline-end: 40px; background-image: var(--nz-chevron); background-repeat: no-repeat; background-position: left 14px center; }
+  .nz-input:focus, .nz-select:focus { outline: none; border: 2px solid var(--nz-blue); box-shadow: 0 0 0 3px var(--nz-xlight-blue); }
+  .nz-input--id { font-family: var(--nz-mono); font-size: 18px; letter-spacing: .12em; direction: ltr; text-align: right; }
+  .nz-input[aria-invalid="true"], .nz-select[aria-invalid="true"] { border: 2px solid var(--nz-red); }
+  .nz-error { font-size: var(--nz-fs-caption); font-weight: 600; color: var(--nz-red); margin-top: 6px; }
+
+  .nz-segmented { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); border: var(--nz-field-border); border-radius: var(--nz-r-ctl); overflow: hidden; }
+  .nz-segmented button { height: 48px; border: 0; background: var(--nz-white); color: var(--nz-navy); font-size: 16px; font-weight: 600; cursor: pointer; }
+  .nz-segmented button + button { border-inline-start: 1px solid var(--nz-xlight-blue); }
+  .nz-segmented button[aria-pressed="true"] { background: var(--nz-navy); color: var(--nz-white); font-weight: 700; }
+
+  /* ---------- Cascading selection as pipeline steps ---------- */
+  .nz-steps { display: flex; flex-direction: column; }
+  .nz-step { display: flex; gap: 14px; }
+  .nz-step__rail { position: relative; width: 24px; flex-shrink: 0; }
+  .nz-step__rail::after {
+    content: ""; position: absolute; top: 24px; bottom: 0; inset-inline-start: 11px; width: 2px; background: var(--nz-xlight-blue);
+  }
+  .nz-step:last-child .nz-step__rail::after { display: none; }
+  .nz-step__node { position: absolute; top: 0; inset-inline-start: 0; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .nz-step__node svg { width: 12px; height: 12px; color: var(--nz-white); }
+  .nz-step__body { flex: 1; display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
+  .nz-step__num { font-family: var(--nz-mono); font-size: 12px; color: var(--nz-blue); margin-inline-end: 6px; }
+  .nz-step--done .nz-step__node { background: var(--nz-blue); }
+  .nz-step--done .nz-step__rail::after { background: var(--nz-light-blue); }
+  .nz-step--active .nz-step__node { border: 2px solid var(--nz-blue); background: var(--nz-white); }
+  .nz-step--locked .nz-step__node { border: 2px dashed var(--nz-light-blue); background: var(--nz-white); }
+  .nz-step--locked .nz-label, .nz-step--locked .nz-step__num { color: var(--nz-ink-2); }
+  .nz-step--locked .nz-select { background-color: var(--nz-xlight-blue); border: 1.5px dashed var(--nz-light-blue); color: var(--nz-ink-2); }
+
+  /* ---------- Confirmation summary ---------- */
+  .nz-summary { margin: 0; border-top: 2px solid var(--nz-navy); }
+  .nz-summary__row { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 48px; border-bottom: var(--nz-line); }
+  .nz-summary__row dt { font-size: var(--nz-fs-small); font-weight: 500; color: var(--nz-ink-2); }
+  .nz-summary__row dd { margin: 0; font-size: 16px; font-weight: 700; }
+  .nz-summary__row dd.is-empty { font-weight: 500; color: var(--nz-ink-2); }
+
+  /* ---------- Answered-question log rows ---------- */
+  .nz-log { display: flex; flex-direction: column; }
+  .nz-log__row { display: flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: var(--nz-line); cursor: default; background: none; border-inline: 0; border-top: 0; width: 100%; text-align: inherit; padding: 0; font: inherit; color: inherit; }
+  .nz-log__row.is-editable { cursor: pointer; }
+  .nz-log__rail { position: relative; width: 16px; align-self: stretch; flex-shrink: 0; }
+  .nz-log__rail::before { content: ""; position: absolute; top: 0; bottom: -1px; inset-inline-start: 7px; width: 2px; background: var(--nz-light-blue); }
+  .nz-log__rail::after { content: ""; position: absolute; top: 50%; inset-inline-start: 3px; width: 10px; height: 10px; margin-top: -5px; background: var(--nz-blue); }
+  .nz-log__idx { font-family: var(--nz-mono); font-size: 12px; font-weight: 500; color: var(--nz-blue); width: 28px; flex-shrink: 0; }
+  .nz-log__text { flex: 1; min-width: 0; font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nz-log__value { font-family: var(--nz-mono); direction: ltr; flex-shrink: 0; font-size: 16px; font-weight: 600; }
+  .nz-log__value small { font-size: 12px; font-weight: 400; color: var(--nz-ink-2); }
+
+  /* ---------- Active question ---------- */
+  .nz-q { display: flex; gap: 12px; padding-top: 20px; }
+  .nz-q__rail { position: relative; width: 16px; flex-shrink: 0; }
+  .nz-q__rail::before { content: ""; position: absolute; top: -20px; height: 26px; inset-inline-start: 7px; width: 2px; background: var(--nz-light-blue); }
+  .nz-q__rail.is-first::before { display: none; }
+  .nz-q__rail::after { content: ""; position: absolute; top: 4px; inset-inline-start: 1px; width: 14px; height: 14px; border: 2px solid var(--nz-blue); background: var(--nz-white); border-radius: 2px; }
+  .nz-q__body { flex: 1; min-width: 0; }
+  .nz-q__meta { display: flex; gap: 8px; align-items: baseline; font-size: var(--nz-fs-caption); color: var(--nz-ink-2); }
+  .nz-q__meta .nz-mono { font-size: 12px; color: var(--nz-blue); }
+  .nz-q__text { margin: 8px 0 0; font-size: var(--nz-fs-question); font-weight: 700; line-height: 1.45; }
+
+  /* ---------- Slider: discrete stops only ---------- */
+  .nz-scale { margin-top: var(--nz-s8); display: flex; flex-direction: column; }
+  /* --nz-n (number of stops) is set from the server-provided scale_max, so
+     stops and numbers share equal grid cells at any width. */
+  .nz-scale__track { position: relative; display: grid; grid-template-columns: repeat(var(--nz-n, 6), 1fr); height: var(--nz-stop-hit); }
+  .nz-scale__track::before {
+    content: ""; position: absolute; top: calc(var(--nz-stop-hit) / 2 - 1px);
+    inset-inline: calc(100% / (var(--nz-n, 6) * 2)); height: 2px; background: var(--nz-xlight-blue);
+  }
+  .nz-stop { position: relative; width: 100%; max-width: var(--nz-stop-hit); justify-self: center; height: var(--nz-stop-hit); padding: 0; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; }
+  .nz-stop::before {
+    content: ""; width: var(--nz-stop-dot); height: var(--nz-stop-dot); border-radius: 50%;
+    background: var(--nz-white); border: 2px solid var(--nz-blue-2);
+  }
+  .nz-stop[aria-checked="true"]::before {
+    width: var(--nz-thumb); height: var(--nz-thumb);
+    background: var(--nz-blue); border: 5px solid var(--nz-white); box-shadow: 0 0 0 2px var(--nz-navy);
+  }
+  .nz-scale__nums { display: grid; grid-template-columns: repeat(var(--nz-n, 6), 1fr); }
+  .nz-scale__nums span { text-align: center; font-family: var(--nz-mono); font-size: 13px; color: var(--nz-ink-2); }
+  .nz-scale__nums span.is-selected { color: var(--nz-navy); font-weight: 700; }
+  .nz-scale__anchors { display: flex; justify-content: space-between; gap: 16px; margin-top: 8px; font-size: var(--nz-fs-small); font-weight: 500; line-height: 1.35; color: var(--nz-ink-2); }
+  .nz-scale__anchors span { max-width: 45%; }
+  .nz-scale__anchors span:last-child { text-align: left; }
+  .nz-scale__hint { margin: 14px 0 0; text-align: center; font-size: var(--nz-fs-caption); color: var(--nz-ink-2); }
+
+  /* ---------- Full-bleed navy screens ---------- */
+  .nz-hero { min-height: 100dvh; background: var(--nz-navy); color: var(--nz-white); padding: 28px 24px 40px; display: flex; flex-direction: column; }
+  .nz-hero__brand { display: flex; align-items: center; gap: 12px; }
+  .nz-hero__brand img { height: 34px; width: auto; display: block; }
+  .nz-hero__brand-rule { flex: 1; height: 1px; background: var(--nz-rule-dark); }
+  .nz-hero__brand-meta { font-family: var(--nz-mono); font-size: 12px; color: var(--nz-light-blue); }
+  .nz-hero__art { flex: 1; display: grid; place-items: center; padding: 24px 0; }
+  .nz-hero__eyebrow { font-size: var(--nz-fs-small); font-weight: 600; color: var(--nz-light-blue); margin: 0 0 8px; }
+  .nz-hero__title { margin: 0; font-size: var(--nz-fs-display); font-weight: 900; line-height: 1.05; letter-spacing: -.01em; }
+  .nz-hero__lead { margin: 12px 0 0; font-size: 18px; line-height: 1.55; color: var(--nz-on-dark-2); }
+  .nz-hero__time { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--nz-rule-dark); display: flex; align-items: baseline; gap: 8px; font-size: 20px; font-weight: 500; }
+  .nz-hero__time strong { font-size: var(--nz-fs-numeral); font-weight: 900; line-height: .9; color: var(--nz-light-blue); font-variant-numeric: tabular-nums; }
+  .nz-hero__status { display: inline-flex; align-items: center; gap: 8px; font-size: var(--nz-fs-small); font-weight: 600; color: var(--nz-light-blue); margin-top: 20px; }
+  .nz-hero__status::before { content: ""; width: 8px; height: 8px; background: var(--nz-light-blue); }
+
+  /* ---------- Error state ---------- */
+  .nz-error-screen { padding: 64px 24px 40px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px; }
+  .nz-error-screen__icon { width: 64px; height: 64px; color: var(--nz-red); }
+  .nz-error-screen__status { display: inline-flex; align-items: center; gap: 8px; font-size: var(--nz-fs-small); font-weight: 700; color: var(--nz-red); }
+  .nz-error-screen__status::before { content: ""; width: 8px; height: 8px; background: var(--nz-red); }
+  .nz-error-screen h1 { color: var(--nz-navy); font-size: var(--nz-fs-h1); margin: 0; }
+  .nz-error-screen p { max-width: 300px; font-size: 16px; line-height: 1.6; color: var(--nz-ink-2); margin: 0; }
+
+  /* ---------- Build mark ---------- */
+  .nz-build polygon { fill: none; stroke: rgba(123, 211, 247, .45); stroke-width: 2; stroke-linejoin: round; transition: fill .2s, stroke .2s; }
+  .nz-build polygon.is-filled:nth-child(1), .nz-build polygon.is-filled:nth-child(7) { fill: var(--nz-xlight-blue); stroke: var(--nz-xlight-blue); }
+  .nz-build polygon.is-filled:nth-child(2), .nz-build polygon.is-filled:nth-child(4),
+  .nz-build polygon.is-filled:nth-child(6) { fill: var(--nz-light-blue); stroke: var(--nz-light-blue); }
+  .nz-build polygon.is-filled:nth-child(3), .nz-build polygon.is-filled:nth-child(5) { fill: var(--nz-blue-2); stroke: var(--nz-blue-2); }
+  .nz-build--complete polygon { stroke: var(--nz-navy); stroke-width: .8; }
+  .nz-build--empty polygon { stroke: var(--nz-blue-2); stroke-width: .6; }
+
+  /* ---------- small utility classes (not in the handoff doc, kept consistent with its tokens) ---------- */
+  .nz-divider { border: 0; border-top: 1px solid var(--nz-xlight-blue); margin: 28px 0 20px; }
+  .nz-section-heading { font-size: 18px; font-weight: 800; margin: 0 0 16px; }
+  .nz-h1 { font-size: var(--nz-fs-h1); font-weight: 800; margin: 0 0 6px; }
+  .nz-subline { font-size: 15px; color: var(--nz-ink-2); margin: 0 0 20px; }
+  .nz-status-message { text-align: center; padding-top: 20vh; color: var(--nz-ink-2); font-size: 15px; }
+  .nz-sending { text-align: center; padding: 20vh 24px 0; }
+  .nz-sending__title { margin: 0; font-size: 32px; font-weight: 700; color: var(--nz-navy); }
+  .nz-sending__hint { margin: 12px 0 0; font-size: 16px; color: var(--nz-ink-2); }
+
+  /* ---------- Desktop ---------- */
+  @media (min-width: 768px) {
+    .nz-topbar { padding: 24px 0 22px; align-items: center; }
+    .nz-topbar > * { width: 720px; margin-inline: auto; }
+    .nz-topbar__title { font-size: 28px; }
+    .nz-progress__seg { height: 5px; }
+    .nz-progress { gap: 6px; }
+    .nz-main { max-width: 640px; margin-inline: auto; padding: 24px 0 40px; }
+    .nz-q__text { font-size: 26px; line-height: 1.4; }
+    .nz-scale { margin-inline: 30px; }
+    :root { --nz-stop-hit: 60px; }
+    .nz-log__row { min-height: 48px; }
+    .nz-log__text { font-size: 16px; }
+    .nz-hero { align-items: center; }
+    .nz-hero > * { width: 100%; max-width: 480px; }
+  }
