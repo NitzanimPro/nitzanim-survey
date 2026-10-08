@@ -31,11 +31,23 @@
     Api.getDefinition().then(onSurveyLoaded_, onLoadError_);
   });
 
+  // Every screen replaces the contents of #app, but the browser keeps the old
+  // scroll position (on phones the new screen often opened half-scrolled, with
+  // its header out of view). Call after replacing the screen.
+  function scrollToTop_() {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }
+
+  var renderedThemeIndex = -1;
+
   // Shown while the final submission is in flight; it can take a while when
   // Google is slow, so it says so and asks not to close the page.
   function renderSendingScreen_() {
     var app = document.getElementById('app');
     app.innerHTML = '';
+    scrollToTop_();
     var wrap = document.createElement('div');
     wrap.className = 'nz-wait';
     var title = document.createElement('p');
@@ -52,6 +64,7 @@
   function renderStatusMessage_(text) {
     var app = document.getElementById('app');
     app.innerHTML = '';
+    scrollToTop_();
     var message = document.createElement('p');
     message.className = 'nz-status-message';
     message.textContent = text;
@@ -179,6 +192,7 @@
   function renderEntryScreen_() {
     var app = document.getElementById('app');
     app.innerHTML = '';
+    scrollToTop_();
 
     var hero = document.createElement('div');
     hero.className = 'nz-hero';
@@ -239,6 +253,7 @@
   function renderDetailsStep_() {
     var app = document.getElementById('app');
     app.innerHTML = '';
+    scrollToTop_();
 
     var topbar = document.createElement('div');
     topbar.className = 'nz-topbar';
@@ -550,6 +565,7 @@
   function renderConfirmStep_() {
     var app = document.getElementById('app');
     app.innerHTML = '';
+    scrollToTop_();
 
     var topbar = document.createElement('div');
     topbar.className = 'nz-topbar';
@@ -687,6 +703,12 @@
 
     var app = document.getElementById('app');
     app.innerHTML = '';
+    // Re-rendering this screen also happens on every question reveal/fold,
+    // where the page should stay put; only a new theme starts at the top.
+    if (renderedThemeIndex !== currentThemeIndex) {
+      renderedThemeIndex = currentThemeIndex;
+      scrollToTop_();
+    }
 
     var topbar = document.createElement('div');
     topbar.className = 'nz-topbar';
@@ -1059,6 +1081,7 @@
   function renderEndScreen_() {
     var app = document.getElementById('app');
     app.innerHTML = '';
+    scrollToTop_();
 
     var hero = document.createElement('div');
     hero.className = 'nz-hero';
@@ -1103,6 +1126,7 @@
   function renderSubmitError_(error, lastThemeCompleted) {
     var app = document.getElementById('app');
     app.innerHTML = '';
+    scrollToTop_();
 
     var topbar = document.createElement('div');
     topbar.className = 'nz-topbar';
