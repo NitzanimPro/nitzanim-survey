@@ -439,7 +439,9 @@
     form.lastChild.querySelector('#gender').setAttribute('aria-describedby', 'gender_error');
 
     if (surveyDefinition.collectCity) {
-      form.appendChild(makeLabeledInput_('city', 'עיר מגורים', false));
+      var cityField = makeLabeledInput_('city', 'עיר מגורים', false);
+      cityField.querySelector('#city').maxLength = 60;   // the server refuses longer values
+      form.appendChild(cityField);
     }
 
     var divider = document.createElement('hr');
@@ -692,8 +694,14 @@
 
     if (surveyDefinition.collectCity) {
       var cityInput = form.querySelector('#city');
-      if (!cityInput.value.trim()) {
-        cityInput.setCustomValidity('יש להזין עיר מגורים');
+      var cityValue = cityInput.value.trim();
+      // Same rule as the server: a value starting with = + - @ would be stored as
+      // a formula in the sheet, so it is refused there; say so here, at once.
+      var cityProblem = !cityValue ? 'יש להזין עיר מגורים'
+        : (/^[=+\-@]/.test(cityValue) || /[\u0000-\u001f\u007f]/.test(cityValue)) ? 'שם העיר לא יכול להתחיל בתו = + - או @'
+        : '';
+      if (cityProblem) {
+        cityInput.setCustomValidity(cityProblem);
         cityInput.reportValidity();
         cityInput.addEventListener('input', function () {
           cityInput.setCustomValidity('');
