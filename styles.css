@@ -228,16 +228,41 @@
   .nz-build--complete polygon { stroke: var(--nz-navy); stroke-width: .8; }
   .nz-build--empty polygon { stroke: var(--nz-blue-2); stroke-width: .6; }
 
+  /* Waiting screens: the arrow fills facet by facet and empties again, in a
+     loop. A wave through the seven facets; it conveys "working", never "how
+     far". Colours match the filled mark. */
+  .nz-build--loading polygon { fill-opacity: 0; stroke-width: 1.4; animation: nz-facet 2.6s ease-in-out infinite; }
+  .nz-build--loading polygon:nth-child(1), .nz-build--loading polygon:nth-child(7) { fill: var(--nz-xlight-blue); }
+  .nz-build--loading polygon:nth-child(2), .nz-build--loading polygon:nth-child(4),
+  .nz-build--loading polygon:nth-child(6) { fill: var(--nz-light-blue); }
+  .nz-build--loading polygon:nth-child(3), .nz-build--loading polygon:nth-child(5) { fill: var(--nz-blue-2); }
+  .nz-build--loading polygon:nth-child(2) { animation-delay: .17s; }
+  .nz-build--loading polygon:nth-child(3) { animation-delay: .34s; }
+  .nz-build--loading polygon:nth-child(4) { animation-delay: .51s; }
+  .nz-build--loading polygon:nth-child(5) { animation-delay: .68s; }
+  .nz-build--loading polygon:nth-child(6) { animation-delay: .85s; }
+  .nz-build--loading polygon:nth-child(7) { animation-delay: 1.02s; }
+  @keyframes nz-facet {
+    0%, 6%    { fill-opacity: 0; }
+    30%, 66%  { fill-opacity: 1; }
+    92%, 100% { fill-opacity: 0; }
+  }
+  /* People who ask for less motion get the arrow at rest, fully drawn. */
+  @media (prefers-reduced-motion: reduce) {
+    .nz-build--loading polygon { animation: none; fill-opacity: .9; }
+  }
+
+  /* Message and waiting screens reuse the opening/closing hero. */
+  .nz-hero--wait .nz-hero__art { padding-top: 8px; }
+  .nz-hero__title--wait { font-size: 32px; line-height: 1.15; }
+  .nz-hero__title--message { font-size: 34px; line-height: 1.15; }
+  .nz-hero--wait .nz-hero__lead { min-height: 3.1em; }
+
   /* ---------- small utility classes (not in the handoff doc, kept consistent with its tokens) ---------- */
   .nz-divider { border: 0; border-top: 1px solid var(--nz-xlight-blue); margin: 28px 0 20px; }
   .nz-section-heading { font-size: 18px; font-weight: 800; margin: 0 0 16px; }
   .nz-h1 { font-size: var(--nz-fs-h1); font-weight: 800; margin: 0 0 6px; }
   .nz-subline { font-size: 15px; color: var(--nz-ink-2); margin: 0 0 20px; }
-  .nz-status-message { text-align: center; padding-top: 20vh; color: var(--nz-ink-2); font-size: 15px; }
-  /* Full-screen waiting state (loading the survey, sending the answers). */
-  .nz-wait { text-align: center; padding: 20vh 24px 0; }
-  .nz-wait__title { margin: 0; font-size: 32px; font-weight: 700; color: var(--nz-navy); }
-  .nz-wait__hint { margin: 12px 0 0; font-size: 16px; color: var(--nz-ink-2); }
 
   /* ---------- Desktop ---------- */
   @media (min-width: 768px) {

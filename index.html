@@ -11,9 +11,16 @@
   </head>
   <body dir="rtl">
     <div id="app">
-      <div class="nz-wait">
-        <p class="nz-wait__title">טוען את השאלון...</p>
-        <p class="nz-wait__hint">זה יכול לקחת כמה שניות.</p>
+      <div class="nz-hero nz-hero--wait" role="status">
+        <div class="nz-hero__brand">
+          <img src="logo.webp" alt="ניצנים">
+          <div class="nz-hero__brand-rule"></div>
+        </div>
+        <div class="nz-hero__art">
+          <svg class="nz-build nz-build--loading" viewBox="-2 -2 124 84" aria-hidden="true"><polygon points="96,24 120,24 120,56 96,56"/><polygon points="96,24 96,56 70,56"/><polygon points="70,24 96,24 70,56"/><polygon points="70,24 70,56 44,56"/><polygon points="44,24 70,24 44,56"/><polygon points="0,40 44,40 44,80"/><polygon points="0,40 44,0 44,40"/></svg>
+        </div>
+        <h1 class="nz-hero__title nz-hero__title--wait">טוען את השאלון...</h1>
+        <p class="nz-hero__lead" id="nz-wait-hint">זה יכול לקחת כמה שניות.</p>
       </div>
     </div>
     <script src="config.js"></script>

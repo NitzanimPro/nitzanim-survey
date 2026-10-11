@@ -39,8 +39,7 @@
   function loadDefinition_(attempt) {
     Api.getDefinition().then(onSurveyLoaded_, function (error) {
       if (isRetryableError_(error) && attempt < LOAD_MAX_ATTEMPTS) {
-        var hint = document.querySelector('.nz-wait__hint');
-        if (hint) hint.textContent = 'הטעינה מתעכבת, מנסים שוב...';
+        setWaitHint_('הטעינה מתעכבת, מנסים שוב...');
         setTimeout(function () {
           loadDefinition_(attempt + 1);
         }, 2000 * attempt);
@@ -62,50 +61,147 @@
   var renderedThemeIndex = -1;
 
   var SENDING_HINT = 'נא לא לסגור את המסך עד שההודעה תופיע.';
+  var LOADING_HINT = 'זה יכול לקחת כמה שניות.';
 
   function setSendingHint_(text) {
-    var hint = document.getElementById('nz-sending-hint');
+    setWaitHint_(text);
+  }
+
+  function setWaitHint_(text) {
+    var hint = document.getElementById('nz-wait-hint');
     if (hint) hint.textContent = text;
+  }
+
+  // ---------- Full-screen states in the same navy style as the opening and
+  // closing screens: waiting (loading / sending) and messages (closed, error).
+
+  function buildBrandHeader_() {
+    var brand = document.createElement('div');
+    brand.className = 'nz-hero__brand';
+    var logo = document.createElement('img');
+    logo.src = LOGO_URL;
+    logo.alt = 'ניצנים';
+    brand.appendChild(logo);
+    var rule = document.createElement('div');
+    rule.className = 'nz-hero__brand-rule';
+    brand.appendChild(rule);
+    return brand;
+  }
+
+  // The arrow builds itself in a loop (CSS only). It says "working", not
+  // "how far along": no percentage, nothing tied to answers or to speed.
+  function renderWaitScreen_(titleText, hintText) {
+    var app = document.getElementById('app');
+    app.innerHTML = '';
+    scrollToTop_();
+
+    var hero = document.createElement('div');
+    hero.className = 'nz-hero nz-hero--wait';
+    hero.setAttribute('role', 'status');
+    hero.appendChild(buildBrandHeader_());
+
+    var art = document.createElement('div');
+    art.className = 'nz-hero__art';
+    art.appendChild(buildMark_('loading', 0));
+    hero.appendChild(art);
+
+    var title = document.createElement('h1');
+    title.className = 'nz-hero__title nz-hero__title--wait';
+    title.textContent = titleText;
+    hero.appendChild(title);
+
+    var hint = document.createElement('p');
+    hint.className = 'nz-hero__lead';
+    hint.id = 'nz-wait-hint';
+    hint.textContent = hintText;
+    hero.appendChild(hint);
+
+    app.appendChild(hero);
   }
 
   // Shown while the final submission is in flight; it can take a while when
   // Google is slow, so it says so and asks not to close the page.
   function renderSendingScreen_() {
-    var app = document.getElementById('app');
-    app.innerHTML = '';
-    scrollToTop_();
-    var wrap = document.createElement('div');
-    wrap.className = 'nz-wait';
-    var title = document.createElement('p');
-    title.className = 'nz-wait__title';
-    title.textContent = 'שולח...';
-    var hint = document.createElement('p');
-    hint.className = 'nz-wait__hint';
-    hint.id = 'nz-sending-hint';
-    hint.textContent = SENDING_HINT;
-    wrap.appendChild(title);
-    wrap.appendChild(hint);
-    app.appendChild(wrap);
+    renderWaitScreen_('שולח...', SENDING_HINT);
   }
 
-  function renderStatusMessage_(text) {
+  // A message screen (survey closed, load failed, nothing to answer). The
+  // outlined arrow stands for "not started"; `action` is an optional
+  // { text, onClick } button.
+  function renderMessageScreen_(options) {
     var app = document.getElementById('app');
     app.innerHTML = '';
     scrollToTop_();
-    var message = document.createElement('p');
-    message.className = 'nz-status-message';
-    message.textContent = text;
-    app.appendChild(message);
+
+    var hero = document.createElement('div');
+    hero.className = 'nz-hero';
+    hero.appendChild(buildBrandHeader_());
+
+    var art = document.createElement('div');
+    art.className = 'nz-hero__art';
+    art.appendChild(buildMark_('empty', 0));
+    hero.appendChild(art);
+
+    var eyebrow = document.createElement('p');
+    eyebrow.className = 'nz-hero__eyebrow';
+    eyebrow.textContent = 'שאלון חניכים';
+    hero.appendChild(eyebrow);
+
+    var title = document.createElement('h1');
+    title.className = 'nz-hero__title nz-hero__title--message';
+    title.textContent = options.title;
+    hero.appendChild(title);
+
+    var lead = document.createElement('p');
+    lead.className = 'nz-hero__lead';
+    lead.textContent = options.lead;
+    hero.appendChild(lead);
+
+    if (options.status) {
+      var status = document.createElement('div');
+      status.className = 'nz-hero__status';
+      status.textContent = options.status;
+      hero.appendChild(status);
+    }
+
+    if (options.action) {
+      var actions = document.createElement('div');
+      actions.className = 'nz-actions';
+      var button = makeButton_(options.action.text, 'on-dark', options.action.icon || 'retry');
+      button.addEventListener('click', options.action.onClick);
+      actions.appendChild(button);
+      hero.appendChild(actions);
+    }
+
+    app.appendChild(hero);
+  }
+
+  function renderClosedScreen_() {
+    renderMessageScreen_({
+      title: 'השאלון סגור כרגע',
+      lead: 'אי אפשר למלא את השאלון עכשיו. אם הוא אמור להיות פתוח, פנו למדריך/ה שלכם.',
+      status: 'סגור'
+    });
   }
 
   function onLoadError_(error) {
-    renderStatusMessage_('שגיאה בטעינת השאלון. ' + describeError_(error) + ' אפשר לרענן את הדף ולנסות שוב.');
+    renderMessageScreen_({
+      title: 'לא הצלחנו לטעון את השאלון',
+      lead: describeError_(error) + ' אפשר לנסות שוב.',
+      action: {
+        text: 'נסה שוב',
+        onClick: function () {
+          renderWaitScreen_('טוען את השאלון...', LOADING_HINT);
+          loadDefinition_(1);
+        }
+      }
+    });
   }
 
   function onSurveyLoaded_(definition) {
     surveyDefinition = definition;
     if (definition.activeQuestionnaire === 'closed') {
-      renderStatusMessage_('השאלון סגור כרגע.');
+      renderClosedScreen_();
       return;
     }
     renderEntryScreen_();
@@ -159,6 +255,7 @@
     svg.classList.add('nz-build');
     if (variant === 'empty') svg.classList.add('nz-build--empty');
     if (variant === 'complete') svg.classList.add('nz-build--complete');
+    if (variant === 'loading') svg.classList.add('nz-build--loading');
     var polygons = svg.querySelectorAll('polygon');
     for (var i = 0; i < polygons.length && i < filledCount; i++) {
       polygons[i].classList.add('is-filled');
@@ -704,7 +801,11 @@
     activeItemId = null;
 
     if (themeGroups.length === 0) {
-      renderStatusMessage_('אין שאלות רלוונטיות עבורך בשאלון זה.');
+      renderMessageScreen_({
+        title: 'אין שאלות עבורך',
+        lead: 'בשאלון הזה אין שאלות שרלוונטיות לקבוצה שבחרת. אפשר לחזור ולבדוק את הפרטים, או לפנות למדריך/ה.',
+        action: { text: 'חזרה לפרטים', icon: 'edit', onClick: renderDetailsStep_ }
+      });
       return;
     }
     renderThemeStep_();
