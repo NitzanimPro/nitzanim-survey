@@ -116,7 +116,7 @@
   .nz-segmented { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); border: var(--nz-field-border); border-radius: var(--nz-r-ctl); overflow: hidden; }
   .nz-segmented button { height: 48px; border: 0; background: var(--nz-white); color: var(--nz-navy); font-size: 16px; font-weight: 600; cursor: pointer; }
   .nz-segmented button + button { border-inline-start: 1px solid var(--nz-xlight-blue); }
-  .nz-segmented button[aria-pressed="true"] { background: var(--nz-navy); color: var(--nz-white); font-weight: 700; }
+  .nz-segmented button[aria-checked="true"] { background: var(--nz-navy); color: var(--nz-white); font-weight: 700; }
 
   /* ---------- Cascading selection as pipeline steps ---------- */
   .nz-steps { display: flex; flex-direction: column; }
@@ -197,7 +197,7 @@
   .nz-scale__hint { margin: 14px 0 0; text-align: center; font-size: var(--nz-fs-caption); color: var(--nz-ink-2); }
 
   /* ---------- Full-bleed navy screens ---------- */
-  .nz-hero { min-height: 100dvh; background: var(--nz-navy); color: var(--nz-white); padding: 28px 24px 40px; display: flex; flex-direction: column; }
+  .nz-hero { min-height: 100vh; min-height: 100dvh; /* vh first: browsers without dvh would otherwise drop the rule */ background: var(--nz-navy); color: var(--nz-white); padding: 28px 24px 40px; display: flex; flex-direction: column; }
   .nz-hero__brand { display: flex; align-items: center; gap: 12px; }
   .nz-hero__brand img { height: 34px; width: auto; display: block; }
   .nz-hero__brand-rule { flex: 1; height: 1px; background: var(--nz-rule-dark); }
@@ -259,6 +259,8 @@
   .nz-hero--wait .nz-hero__lead { min-height: 3.1em; }
 
   /* ---------- small utility classes (not in the handoff doc, kept consistent with its tokens) ---------- */
+  /* Headings that receive focus by script (screen changes) show no ring. */
+  [tabindex="-1"]:focus { outline: none; }
   .nz-divider { border: 0; border-top: 1px solid var(--nz-xlight-blue); margin: 28px 0 20px; }
   .nz-section-heading { font-size: 18px; font-weight: 800; margin: 0 0 16px; }
   .nz-h1 { font-size: var(--nz-fs-h1); font-weight: 800; margin: 0 0 6px; }

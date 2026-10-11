@@ -56,6 +56,21 @@
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+    scheduleFocus_('screen');
+  }
+
+  // After a screen is drawn, move keyboard/screen-reader focus to its heading
+  // (or, inside a part, to the question), so the change is announced instead of
+  // focus being lost with the removed elements. Runs once the render finished.
+  function scheduleFocus_(kind) {
+    setTimeout(function () {
+      var target = kind === 'question'
+        ? document.querySelector('#app .nz-q__text')
+        : document.querySelector('#app h1, #app [role="heading"][aria-level="1"]');
+      if (!target) return;
+      target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
+    }, 0);
   }
 
   var renderedThemeIndex = -1;
@@ -390,6 +405,8 @@
     titleWrap.appendChild(eyebrow);
     var title = document.createElement('div');
     title.className = 'nz-topbar__title';
+    title.setAttribute('role', 'heading');
+    title.setAttribute('aria-level', '1');
     title.textContent = 'פרטים אישיים';
     titleWrap.appendChild(title);
     row.appendChild(titleWrap);
@@ -407,10 +424,19 @@
     var idError = document.createElement('div');
     idError.id = 'id_number_error';
     idError.className = 'nz-error';
+    // announced when it appears, and tied to the field for screen readers
+    idError.setAttribute('role', 'alert');
+    idField.querySelector('#id_number').setAttribute('aria-describedby', 'id_number_error');
     idField.appendChild(idError);
     form.appendChild(idField);
 
     form.appendChild(makeSegmented_('gender', 'מגדר', surveyDefinition.settingsLists.gender));
+    var genderError = document.createElement('div');
+    genderError.id = 'gender_error';
+    genderError.className = 'nz-error';
+    genderError.setAttribute('role', 'alert');
+    form.lastChild.appendChild(genderError);
+    form.lastChild.querySelector('#gender').setAttribute('aria-describedby', 'gender_error');
 
     if (surveyDefinition.collectCity) {
       form.appendChild(makeLabeledInput_('city', 'עיר מגורים', false));
@@ -574,6 +600,27 @@
 
   // ---------- Segmented control (used for gender) ----------
 
+  // Radio-group keyboard behaviour for a row of buttons with role=radio: arrow
+  // keys move to the neighbouring option and choose it. The page is
+  // right-to-left, so the left arrow goes to the next option (to the left).
+  function enableRadioArrows_(buttons) {
+    buttons.forEach(function (button, index) {
+      button.addEventListener('keydown', function (event) {
+        var target = null;
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') target = buttons[index + 1];
+        else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') target = buttons[index - 1];
+        else if (event.key === 'Home') target = buttons[0];
+        else if (event.key === 'End') target = buttons[buttons.length - 1];
+        else return;
+        event.preventDefault();
+        if (target) {
+          target.focus();
+          target.click();
+        }
+      });
+    });
+  }
+
   function makeSegmented_(id, labelText, options) {
     var field = document.createElement('div');
     field.className = 'nz-field';
@@ -593,27 +640,32 @@
       btn.type = 'button';
       btn.setAttribute('role', 'radio');
       btn.textContent = optionText;
-      btn.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+      // No default: a student who skips the field must not be recorded as the first option.
+      btn.setAttribute('aria-checked', 'false');
       btn.dataset.value = optionText;
       btn.addEventListener('click', function () {
-        Array.prototype.forEach.call(group.children, function (b) { b.setAttribute('aria-pressed', 'false'); });
-        btn.setAttribute('aria-pressed', 'true');
+        Array.prototype.forEach.call(group.children, function (b) { b.setAttribute('aria-checked', 'false'); });
+        btn.setAttribute('aria-checked', 'true');
+        var error = document.getElementById(id + '_error');
+        if (error) error.textContent = '';
+        group.removeAttribute('aria-invalid');
       });
       group.appendChild(btn);
     });
+    enableRadioArrows_(Array.prototype.slice.call(group.children));
 
     field.appendChild(group);
     return field;
   }
 
   function getSegmentedValue_(groupEl) {
-    var pressed = groupEl.querySelector('[aria-pressed="true"]');
+    var pressed = groupEl.querySelector('[aria-checked="true"]');
     return pressed ? pressed.dataset.value : null;
   }
 
   function setSegmentedValue_(groupEl, value) {
     Array.prototype.forEach.call(groupEl.children, function (b) {
-      b.setAttribute('aria-pressed', b.dataset.value === value ? 'true' : 'false');
+      b.setAttribute('aria-checked', b.dataset.value === value ? 'true' : 'false');
     });
   }
 
@@ -627,6 +679,14 @@
     if (!isValidIsraeliId_(idNumberRaw)) {
       idError.textContent = 'מספר תעודת הזהות אינו תקין. יש להזין עד 9 ספרות.';
       idInput.setAttribute('aria-invalid', 'true');
+      return;
+    }
+
+    var genderGroup = form.querySelector('#gender');
+    if (getSegmentedValue_(genderGroup) === null) {
+      document.getElementById('gender_error').textContent = 'יש לבחור אפשרות.';
+      genderGroup.setAttribute('aria-invalid', 'true');
+      genderGroup.querySelector('button').focus();
       return;
     }
 
@@ -697,6 +757,8 @@
     row.className = 'nz-topbar__row';
     var title = document.createElement('div');
     title.className = 'nz-topbar__title';
+    title.setAttribute('role', 'heading');
+    title.setAttribute('aria-level', '1');
     title.textContent = 'אישור פרטים';
     row.appendChild(title);
     topbar.appendChild(row);
@@ -833,7 +895,8 @@
     app.innerHTML = '';
     // Re-rendering this screen also happens on every question reveal/fold,
     // where the page should stay put; only a new theme starts at the top.
-    if (renderedThemeIndex !== currentThemeIndex) {
+    var newTheme = renderedThemeIndex !== currentThemeIndex;
+    if (newTheme) {
       renderedThemeIndex = currentThemeIndex;
       scrollToTop_();
     }
@@ -844,6 +907,8 @@
     row.className = 'nz-topbar__row';
     var title = document.createElement('div');
     title.className = 'nz-topbar__title';
+    title.setAttribute('role', 'heading');
+    title.setAttribute('aria-level', '1');
     title.textContent = 'חלק ' + (currentThemeIndex + 1) + ' מתוך ' + themeGroups.length;
     row.appendChild(title);
     var facetsFilled = Math.round((currentThemeIndex / themeGroups.length) * 7);
@@ -883,6 +948,7 @@
 
     main.appendChild(renderActiveQuestion_(theme.questions[activeIndex], activeIndex, hasLogRows));
     app.appendChild(main);
+    if (!newTheme) scheduleFocus_('question');
   }
 
   function renderCollapsedRow_(question, indexInTheme) {
@@ -952,6 +1018,8 @@
 
     var questionText = document.createElement('p');
     questionText.className = 'nz-q__text';
+    questionText.setAttribute('role', 'heading');
+    questionText.setAttribute('aria-level', '2');
     questionText.textContent = question.text;
     body.appendChild(questionText);
 
@@ -1013,6 +1081,7 @@
       })(value);
     }
 
+    enableRadioArrows_(stopButtons);
     scale.appendChild(track);
     scale.appendChild(nums);
 
@@ -1300,6 +1369,8 @@
     row.className = 'nz-topbar__row';
     var title = document.createElement('div');
     title.className = 'nz-topbar__title';
+    title.setAttribute('role', 'heading');
+    title.setAttribute('aria-level', '1');
     title.textContent = 'שליחה';
     row.appendChild(title);
     topbar.appendChild(row);
