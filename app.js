@@ -841,10 +841,17 @@
 
   // ---------- Theme flow: reveal/fold questions + discrete scale ----------
 
+  // Same rule as the server: class names are compared without geresh,
+  // gershayim, quotes or spaces, so a typing variant never hides questions.
+  function normalizeClassName_(name) {
+    return String(name == null ? '' : name).replace(/[\s'"`\u05F3\u05F4\u2018\u2019\u201C\u201D]/g, '');
+  }
+
   function filterQuestionsForClass_(questions, studentClass) {
     return questions.filter(function (q) {
-      if (!q.classes || q.classes === 'all') return true;
-      return q.classes.split(',').map(function (c) { return c.trim(); }).indexOf(studentClass) !== -1;
+      if (!q.classes || String(q.classes).trim() === 'all') return true;
+      var wanted = normalizeClassName_(studentClass);
+      return String(q.classes).split(',').some(function (c) { return normalizeClassName_(c) === wanted; });
     });
   }
 
