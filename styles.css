@@ -283,3 +283,5 @@ html[dir="ltr"] .nz-icon-arrow, html[dir="ltr"] .nz-build, .nz-btn[lang="en"] .n
 /* Entry screen: Hebrew is the filled main button, English the outlined one beneath it */
 .nz-actions--stack { flex-direction: column; align-items: stretch; gap: 12px; }
 .nz-actions--stack .nz-btn { width: 100%; }
+/* English copy of the intro sentence on the entry screen */
+.nz-hero__lead--en { text-align: left; margin-top: 8px; }

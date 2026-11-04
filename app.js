@@ -38,8 +38,8 @@
 
   var STRINGS = {
     brand:          { he: 'ניצנים', en: 'Nitzanim' },
-    surveyName:     { he: 'שאלון חניכים', en: 'Participant questionnaire' },
-    pageTitle:      { he: 'שאלון חניכים - ניצנים', en: 'Nitzanim - participant questionnaire' },
+    surveyName:     { he: 'שאלון חניכות.ים', en: 'Participant questionnaire' },
+    pageTitle:      { he: 'שאלון חניכות.ים - ניצנים', en: 'Nitzanim - participant questionnaire' },
     loading:        { he: 'טוען את השאלון...', en: 'Loading the questionnaire...' },
     loadingHint:    { he: 'זה יכול לקחת כמה שניות.', en: 'This can take a few seconds.' },
     loadingSlow:    { he: 'הטעינה מתעכבת, מנסים שוב...', en: 'Loading is taking longer, trying again...' },
@@ -453,7 +453,7 @@
     scrollToTop_();
 
     var hero = document.createElement('div');
-    hero.className = 'nz-hero';
+    hero.className = 'nz-hero nz-hero--entry';
 
     var brand = document.createElement('div');
     brand.className = 'nz-hero__brand';
@@ -485,6 +485,14 @@
     lead.className = 'nz-hero__lead';
     lead.textContent = t('entryLead');
     hero.appendChild(lead);
+
+    // The same sentence in English, aligned to the left
+    var leadEn = document.createElement('p');
+    leadEn.className = 'nz-hero__lead nz-hero__lead--en';
+    leadEn.lang = 'en';
+    leadEn.dir = 'ltr';
+    leadEn.textContent = STRINGS.entryLead.en;
+    hero.appendChild(leadEn);
 
     var timeRow = document.createElement('div');
     timeRow.className = 'nz-hero__time';
