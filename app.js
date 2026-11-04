@@ -925,7 +925,7 @@
     var topbar = document.createElement('div');
     topbar.className = 'nz-topbar';
     var row = document.createElement('div');
-    row.className = 'nz-topbar__row';
+    row.className = 'nz-topbar__row nz-topbar__row--end';
     var facetsFilled = Math.round((currentThemeIndex / themeGroups.length) * 7);
     var smallMark = buildMark_(null, facetsFilled);
     smallMark.style.width = '48px';
@@ -954,13 +954,36 @@
     if (!newTheme) scheduleFocus_('question');
   }
 
+  // Yes/no item: two buttons, no = 1 (right, where 1 sits on the scale) and
+  // yes = scale_max (left, where the top of the scale sits).
+  function renderYesNo_(question, existingValue, onSelect) {
+    var scaleMax = surveyDefinition.scaleMax;
+    var group = document.createElement('div');
+    group.className = 'nz-segmented nz-segmented--choice';
+    group.setAttribute('role', 'radiogroup');
+    group.setAttribute('aria-label', question.text);
+    var buttons = [];
+    [{ label: 'לא', value: 1 }, { label: 'כן', value: scaleMax }].forEach(function (option) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.setAttribute('role', 'radio');
+      btn.textContent = option.label;
+      btn.setAttribute('aria-checked', existingValue === option.value ? 'true' : 'false');
+      btn.addEventListener('click', function () {
+        buttons.forEach(function (b) { b.setAttribute('aria-checked', 'false'); });
+        btn.setAttribute('aria-checked', 'true');
+        onSelect(option.value);
+      });
+      buttons.push(btn);
+      group.appendChild(btn);
+    });
+    enableRadioArrows_(buttons);
+    return group;
+  }
+
   function renderActiveQuestion_(question) {
     var wrapper = document.createElement('div');
     wrapper.className = 'nz-q';
-
-    var rail = document.createElement('div');
-    rail.className = 'nz-q__rail is-first';
-    wrapper.appendChild(rail);
 
     var body = document.createElement('div');
     body.className = 'nz-q__body';
@@ -981,70 +1004,77 @@
     var existingValue = answers[question.item_id];
     var selectedValue = existingValue;
 
-    var scale = document.createElement('div');
-    scale.className = 'nz-scale';
-
-    var track = document.createElement('div');
-    track.className = 'nz-scale__track';
-    track.setAttribute('role', 'radiogroup');
-    track.setAttribute('aria-label', question.text);
-
-    var nums = document.createElement('div');
-    nums.className = 'nz-scale__nums';
-
     var continueButton = makeButton_('המשך', 'primary', 'arrow');
     continueButton.disabled = existingValue === undefined;
 
-    var stopButtons = [];
-    var numSpans = [];
-    var scaleMax = surveyDefinition.scaleMax;
-    scale.style.setProperty('--nz-n', scaleMax);
-    for (var value = 1; value <= scaleMax; value++) {
-      (function (value) {
-        var stop = document.createElement('button');
-        stop.type = 'button';
-        stop.className = 'nz-stop';
-        stop.setAttribute('role', 'radio');
-        var isChecked = existingValue === value;
-        stop.setAttribute('aria-checked', isChecked ? 'true' : 'false');
-        var ariaLabel = value + ' מתוך ' + scaleMax;
-        if (value === 1) ariaLabel += ', ' + question.anchor_low;
-        if (value === scaleMax) ariaLabel += ', ' + question.anchor_high;
-        stop.setAttribute('aria-label', ariaLabel);
-        stop.addEventListener('click', function () {
-          stopButtons.forEach(function (b) { b.setAttribute('aria-checked', 'false'); });
-          stop.setAttribute('aria-checked', 'true');
-          numSpans.forEach(function (n) { n.classList.remove('is-selected'); });
-          numSpans[value - 1].classList.add('is-selected');
-          selectedValue = value;
-          continueButton.disabled = false;
-        });
-        stopButtons.push(stop);
-        track.appendChild(stop);
+    if (question.type === 'yesno') {
+      body.appendChild(renderYesNo_(question, existingValue, function (value) {
+        selectedValue = value;
+        continueButton.disabled = false;
+      }));
+    } else {
+      var scale = document.createElement('div');
+      scale.className = 'nz-scale';
 
-        var numSpan = document.createElement('span');
-        numSpan.textContent = value;
-        if (isChecked) numSpan.classList.add('is-selected');
-        numSpans.push(numSpan);
-        nums.appendChild(numSpan);
-      })(value);
+      var track = document.createElement('div');
+      track.className = 'nz-scale__track';
+      track.setAttribute('role', 'radiogroup');
+      track.setAttribute('aria-label', question.text);
+
+      var nums = document.createElement('div');
+      nums.className = 'nz-scale__nums';
+
+      var stopButtons = [];
+      var numSpans = [];
+      var scaleMax = surveyDefinition.scaleMax;
+      scale.style.setProperty('--nz-n', scaleMax);
+      for (var value = 1; value <= scaleMax; value++) {
+        (function (value) {
+          var stop = document.createElement('button');
+          stop.type = 'button';
+          stop.className = 'nz-stop';
+          stop.setAttribute('role', 'radio');
+          var isChecked = existingValue === value;
+          stop.setAttribute('aria-checked', isChecked ? 'true' : 'false');
+          var ariaLabel = value + ' מתוך ' + scaleMax;
+          if (value === 1) ariaLabel += ', ' + question.anchor_low;
+          if (value === scaleMax) ariaLabel += ', ' + question.anchor_high;
+          stop.setAttribute('aria-label', ariaLabel);
+          stop.addEventListener('click', function () {
+            stopButtons.forEach(function (b) { b.setAttribute('aria-checked', 'false'); });
+            stop.setAttribute('aria-checked', 'true');
+            numSpans.forEach(function (n) { n.classList.remove('is-selected'); });
+            numSpans[value - 1].classList.add('is-selected');
+            selectedValue = value;
+            continueButton.disabled = false;
+          });
+          stopButtons.push(stop);
+          track.appendChild(stop);
+
+          var numSpan = document.createElement('span');
+          numSpan.textContent = value;
+          if (isChecked) numSpan.classList.add('is-selected');
+          numSpans.push(numSpan);
+          nums.appendChild(numSpan);
+        })(value);
+      }
+
+      enableRadioArrows_(stopButtons);
+      scale.appendChild(track);
+      scale.appendChild(nums);
+
+      var anchors = document.createElement('div');
+      anchors.className = 'nz-scale__anchors';
+      var lowAnchor = document.createElement('span');
+      lowAnchor.textContent = question.anchor_low;
+      var highAnchor = document.createElement('span');
+      highAnchor.textContent = question.anchor_high;
+      anchors.appendChild(lowAnchor);
+      anchors.appendChild(highAnchor);
+      scale.appendChild(anchors);
+
+      body.appendChild(scale);
     }
-
-    enableRadioArrows_(stopButtons);
-    scale.appendChild(track);
-    scale.appendChild(nums);
-
-    var anchors = document.createElement('div');
-    anchors.className = 'nz-scale__anchors';
-    var lowAnchor = document.createElement('span');
-    lowAnchor.textContent = question.anchor_low;
-    var highAnchor = document.createElement('span');
-    highAnchor.textContent = question.anchor_high;
-    anchors.appendChild(lowAnchor);
-    anchors.appendChild(highAnchor);
-    scale.appendChild(anchors);
-
-    body.appendChild(scale);
 
     var actions = document.createElement('div');
     actions.className = 'nz-actions';

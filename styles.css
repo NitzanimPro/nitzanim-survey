@@ -74,6 +74,7 @@
     display: flex; flex-direction: column; gap: 14px;
   }
   .nz-topbar__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .nz-topbar__row--end { justify-content: flex-end; }
   .nz-topbar__eyebrow { font-size: var(--nz-fs-eyebrow); font-weight: 600; letter-spacing: .02em; color: var(--nz-light-blue); }
   .nz-topbar__title { font-size: var(--nz-fs-header); font-weight: 800; line-height: 1.2; color: var(--nz-white); }
 
@@ -116,6 +117,8 @@
   .nz-segmented { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); border: var(--nz-field-border); border-radius: var(--nz-r-ctl); overflow: hidden; }
   .nz-segmented button { height: 48px; border: 0; background: var(--nz-white); color: var(--nz-navy); font-size: 16px; font-weight: 600; cursor: pointer; }
   .nz-segmented button + button { border-inline-start: 1px solid var(--nz-xlight-blue); }
+  .nz-segmented--choice { margin-top: var(--nz-s8); }
+  .nz-segmented--choice button { height: 56px; font-size: 18px; }
   .nz-segmented button[aria-checked="true"] { background: var(--nz-navy); color: var(--nz-white); font-weight: 700; }
 
   /* ---------- Cascading selection as pipeline steps ---------- */
@@ -145,19 +148,12 @@
   .nz-summary__row dd.is-empty { font-weight: 500; color: var(--nz-ink-2); }
 
   /* ---------- Active question ---------- */
-  .nz-q { display: flex; gap: 12px; padding-top: 20px; }
-  .nz-q__rail { position: relative; width: 16px; flex-shrink: 0; }
-  .nz-q__rail::before { content: ""; position: absolute; top: -20px; height: 26px; inset-inline-start: 7px; width: 2px; background: var(--nz-light-blue); }
-  .nz-q__rail.is-first::before { display: none; }
-  .nz-q__rail::after { content: ""; position: absolute; top: 4px; inset-inline-start: 1px; width: 14px; height: 14px; border: 2px solid var(--nz-blue); background: var(--nz-white); border-radius: 2px; }
+  .nz-q { display: flex; padding-top: 20px; }
   .nz-q__body { flex: 1; min-width: 0; }
   .nz-q__text { margin: 8px 0 0; font-size: var(--nz-fs-question); font-weight: 700; line-height: 1.45; }
 
   /* ---------- Slider: discrete stops only ---------- */
-  /* The question body sits beside a 28px rail (16px + 12px gap). The scale and
-     the continue button pull back over it so they centre on the screen. */
-  .nz-scale { margin-top: var(--nz-s8); margin-inline-start: -28px; display: flex; flex-direction: column; }
-  .nz-q__body .nz-actions { margin-inline-start: -28px; }
+  .nz-scale { margin-top: var(--nz-s8); display: flex; flex-direction: column; }
   /* --nz-n (number of stops) is set from the server-provided scale_max, so
      stops and numbers share equal grid cells at any width. */
   .nz-scale__track { position: relative; display: grid; grid-template-columns: repeat(var(--nz-n, 6), 1fr); height: var(--nz-stop-hit); }
@@ -261,7 +257,7 @@
     .nz-progress { gap: 6px; }
     .nz-main { max-width: 640px; margin-inline: auto; padding: 24px 0 40px; }
     .nz-q__text { font-size: 26px; line-height: 1.4; }
-    .nz-scale { margin-inline: 2px 30px; }
+    .nz-scale { margin-inline: 2px; }
     :root { --nz-stop-hit: 60px; }
     .nz-hero { align-items: center; }
     .nz-hero > * { width: 100%; max-width: 480px; }
