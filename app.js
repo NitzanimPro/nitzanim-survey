@@ -52,21 +52,24 @@
   // Every screen replaces the contents of #app, but the browser keeps the old
   // scroll position (on phones the new screen often opened half-scrolled, with
   // its header out of view). Call after replacing the screen.
-  function scrollToTop_() {
+  function scrollToTop_(focusKind) {
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-    scheduleFocus_('screen');
+    scheduleFocus_(focusKind || 'screen');
   }
 
   // After a screen is drawn, move keyboard/screen-reader focus to its heading
-  // (or, inside a part, to the question), so the change is announced instead of
-  // focus being lost with the removed elements. Runs once the render finished.
+  // (or, inside a part, to the question; at the start of a new part, to the
+  // progress bar), so the change is announced instead of focus being lost with
+  // the removed elements. Runs once the render finished.
   function scheduleFocus_(kind) {
     setTimeout(function () {
       var target = kind === 'question'
         ? document.querySelector('#app .nz-q__text')
-        : document.querySelector('#app h1, #app [role="heading"][aria-level="1"]');
+        : kind === 'progress'
+          ? document.querySelector('#app .nz-progress')
+          : document.querySelector('#app h1, #app [role="heading"][aria-level="1"]');
       if (!target) return;
       target.setAttribute('tabindex', '-1');
       target.focus({ preventScroll: true });
@@ -280,9 +283,19 @@
 
   // ---------- Progress segments (one per part) ----------
 
-  function renderProgressSegments_(totalSegments, currentIndex, currentFractionPct) {
+  // answeredCount / totalCount (optional) feed the screen-reader description
+  // only; the visual bar is unchanged.
+  function renderProgressSegments_(totalSegments, currentIndex, currentFractionPct, answeredCount, totalCount) {
     var progress = document.createElement('div');
     progress.className = 'nz-progress';
+    if (totalCount) {
+      progress.setAttribute('role', 'progressbar');
+      progress.setAttribute('aria-label', 'התקדמות בשאלון');
+      progress.setAttribute('aria-valuemin', '0');
+      progress.setAttribute('aria-valuemax', String(totalCount));
+      progress.setAttribute('aria-valuenow', String(answeredCount));
+      progress.setAttribute('aria-valuetext', 'נענו ' + answeredCount + ' מתוך ' + totalCount + ' שאלות');
+    }
     for (var i = 0; i < totalSegments; i++) {
       var seg = document.createElement('div');
       seg.className = 'nz-progress__seg';
@@ -906,19 +919,13 @@
     var newTheme = renderedThemeIndex !== currentThemeIndex;
     if (newTheme) {
       renderedThemeIndex = currentThemeIndex;
-      scrollToTop_();
+      scrollToTop_('progress');
     }
 
     var topbar = document.createElement('div');
     topbar.className = 'nz-topbar';
     var row = document.createElement('div');
     row.className = 'nz-topbar__row';
-    var title = document.createElement('div');
-    title.className = 'nz-topbar__title';
-    title.setAttribute('role', 'heading');
-    title.setAttribute('aria-level', '1');
-    title.textContent = 'חלק ' + (currentThemeIndex + 1) + ' מתוך ' + themeGroups.length;
-    row.appendChild(title);
     var facetsFilled = Math.round((currentThemeIndex / themeGroups.length) * 7);
     var smallMark = buildMark_(null, facetsFilled);
     smallMark.style.width = '48px';
@@ -928,112 +935,46 @@
 
     var answeredInTheme = theme.questions.filter(function (q) { return q.item_id in answers; }).length;
     var currentFractionPct = Math.round((answeredInTheme / theme.questions.length) * 100);
-    topbar.appendChild(renderProgressSegments_(themeGroups.length, currentThemeIndex, currentFractionPct));
+    var totalItems = themeGroups.reduce(function (sum, t) { return sum + t.questions.length; }, 0);
+    var answeredItems = Object.keys(answers).length;
+    topbar.appendChild(renderProgressSegments_(themeGroups.length, currentThemeIndex, currentFractionPct, answeredItems, totalItems));
 
     app.appendChild(topbar);
 
+    // Only the current question is shown; answered ones are not displayed
+    // and cannot be reopened (no going back).
     var main = document.createElement('div');
     main.className = 'nz-main';
-
-    var log = document.createElement('div');
-    log.className = 'nz-log';
-    var hasLogRows = false;
-    var activeIndex = -1;
-
+    var activeIndex = 0;
     for (var i = 0; i < theme.questions.length; i++) {
-      var question = theme.questions[i];
-      if (question.item_id === activeItemId) {
-        activeIndex = i;
-        break;
-      } else if (question.item_id in answers) {
-        log.appendChild(renderCollapsedRow_(question, i));
-        hasLogRows = true;
-      } else {
-        break;
-      }
+      if (theme.questions[i].item_id === activeItemId) { activeIndex = i; break; }
     }
-    if (hasLogRows) main.appendChild(log);
-
-    main.appendChild(renderActiveQuestion_(theme.questions[activeIndex], activeIndex, hasLogRows));
+    main.appendChild(renderActiveQuestion_(theme.questions[activeIndex]));
     app.appendChild(main);
     if (!newTheme) scheduleFocus_('question');
   }
 
-  function renderCollapsedRow_(question, indexInTheme) {
-    var row = document.createElement('div');
-    row.className = 'nz-log__row' + (surveyDefinition.allowBack ? ' is-editable' : '');
-    if (surveyDefinition.allowBack) {
-      row.setAttribute('role', 'button');
-      row.setAttribute('tabindex', '0');
-    }
-
-    var rail = document.createElement('div');
-    rail.className = 'nz-log__rail';
-    row.appendChild(rail);
-
-    var idx = document.createElement('span');
-    idx.className = 'nz-log__idx nz-mono';
-    idx.textContent = (currentThemeIndex + 1) + '.' + (indexInTheme + 1);
-    row.appendChild(idx);
-
-    var text = document.createElement('span');
-    text.className = 'nz-log__text';
-    text.textContent = question.text;
-    row.appendChild(text);
-
-    var value = document.createElement('span');
-    value.className = 'nz-log__value nz-mono';
-    value.textContent = answers[question.item_id];
-    var small = document.createElement('small');
-    small.textContent = '/' + surveyDefinition.scaleMax;
-    value.appendChild(small);
-    row.appendChild(value);
-
-    if (surveyDefinition.allowBack) {
-      var openForEdit = function () {
-        activeItemId = question.item_id;
-        renderThemeStep_();
-      };
-      row.addEventListener('click', openForEdit);
-      row.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          openForEdit();
-        }
-      });
-    }
-    return row;
-  }
-
-  function renderActiveQuestion_(question, indexInTheme, hasLogRows) {
+  function renderActiveQuestion_(question) {
     var wrapper = document.createElement('div');
     wrapper.className = 'nz-q';
 
     var rail = document.createElement('div');
-    rail.className = 'nz-q__rail' + (hasLogRows ? '' : ' is-first');
+    rail.className = 'nz-q__rail is-first';
     wrapper.appendChild(rail);
 
     var body = document.createElement('div');
     body.className = 'nz-q__body';
 
-    var meta = document.createElement('div');
-    meta.className = 'nz-q__meta';
-    var metaIdx = document.createElement('span');
-    metaIdx.className = 'nz-mono';
-    metaIdx.textContent = (currentThemeIndex + 1) + '.' + (indexInTheme + 1);
-    meta.appendChild(metaIdx);
-    body.appendChild(meta);
-
     var questionText = document.createElement('p');
     questionText.className = 'nz-q__text';
     questionText.setAttribute('role', 'heading');
-    questionText.setAttribute('aria-level', '2');
+    questionText.setAttribute('aria-level', '1');
     questionText.textContent = question.text;
     body.appendChild(questionText);
 
     // Response time is measured only the first time a question is shown -
-    // reopening an already-answered row (allow_back) doesn't restart the
-    // clock or claim another presentation-order slot.
+    // re-rendering the same question doesn't restart the clock or claim
+    // another presentation-order slot.
     var isFirstReveal = !(question.item_id in responseTimes);
     var revealedAt = isFirstReveal ? Date.now() : null;
     var revealOrder = isFirstReveal ? ++presentationOrderCounter : null;
