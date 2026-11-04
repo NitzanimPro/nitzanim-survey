@@ -27,6 +27,112 @@
     });
   }
 
+
+  // ---------- Language ----------
+  // The student chooses Hebrew or English once, on the entry screen, and it
+  // cannot be changed afterwards (choosing English asks for confirmation
+  // first, with a way back). Until then every screen is Hebrew. Group names
+  // and instructor names are data and stay as written in the sheet.
+
+  var lang = null;   // 'he' | 'en' | null until chosen
+
+  var STRINGS = {
+    brand:          { he: 'ניצנים', en: 'Nitzanim' },
+    surveyName:     { he: 'שאלון חניכים', en: 'Participant questionnaire' },
+    pageTitle:      { he: 'שאלון חניכים - ניצנים', en: 'Nitzanim - participant questionnaire' },
+    loading:        { he: 'טוען את השאלון...', en: 'Loading the questionnaire...' },
+    loadingHint:    { he: 'זה יכול לקחת כמה שניות.', en: 'This can take a few seconds.' },
+    loadingSlow:    { he: 'הטעינה מתעכבת, מנסים שוב...', en: 'Loading is taking longer, trying again...' },
+    sending:        { he: 'שולח...', en: 'Sending...' },
+    sendingHint:    { he: 'נא לא לסגור את המסך עד שההודעה תופיע.', en: 'Please do not close this screen until the confirmation appears.' },
+    sendingOffline: { he: 'אין חיבור לאינטרנט. השליחה תימשך אוטומטית כשהחיבור יחזור. נא לא לסגור את המסך.', en: 'No internet connection. Sending will continue automatically when the connection returns. Please do not close this screen.' },
+    sendingSlow:    { he: 'החיבור איטי, מנסים שוב... נא לא לסגור את המסך.', en: 'The connection is slow, trying again... Please do not close this screen.' },
+    closedTitle:    { he: 'השאלון סגור כרגע', en: 'The questionnaire is closed right now' },
+    closedLead:     { he: 'אי אפשר למלא את השאלון עכשיו. אם הוא אמור להיות פתוח, פנו למדריך/ה שלכם.', en: 'The questionnaire cannot be filled in right now. If it should be open, please ask your instructor.' },
+    closedStatus:   { he: 'סגור', en: 'Closed' },
+    loadFailTitle:  { he: 'לא הצלחנו לטעון את השאלון', en: 'We could not load the questionnaire' },
+    canRetry:       { he: 'אפשר לנסות שוב.', en: 'You can try again.' },
+    retry:          { he: 'נסה שוב', en: 'Try again' },
+    progressLabel:  { he: 'התקדמות בשאלון', en: 'Questionnaire progress' },
+    progressText:   { he: 'נענו {n} מתוך {total} שאלות', en: '{n} of {total} questions answered' },
+    entryLead:      { he: 'כמה שאלות קצרות שעוזרות לנו להכיר אותך טוב יותר. אין תשובות נכונות או לא נכונות.', en: 'A few short questions that help us get to know you better. There are no right or wrong answers.' },
+    minutes:        { he: 'דקות בערך', en: 'minutes, approximately' },
+    start:          { he: 'להתחלת השאלון בעברית', en: 'To start the questionnaire in English' },
+    langConfirmTitle: { he: 'למלא את השאלון באנגלית?', en: 'Fill in the questionnaire in English?' },
+    langConfirmLead:  { he: 'בחרת למלא את השאלון באנגלית. אחרי שממשיכים, אי אפשר לשנות את השפה.', en: 'You chose to fill in the questionnaire in English. After you continue, the language cannot be changed.' },
+    langConfirmGo:    { he: 'להמשיך באנגלית', en: 'Continue in English' },
+    langConfirmBack:  { he: 'חזרה לבחירת שפה', en: 'Back to language choice' },
+    step1:          { he: 'שלב 1', en: 'Step 1' },
+    personal:       { he: 'פרטים אישיים', en: 'Personal details' },
+    idNumber:       { he: 'תעודת זהות', en: 'ID number' },
+    gender:         { he: 'מגדר', en: 'Gender' },
+    city:           { he: 'עיר מגורים', en: 'City of residence' },
+    chooseGroup:    { he: 'בחירת קבוצה', en: 'Choose your group' },
+    space:          { he: 'מרחב', en: 'Region' },
+    instructor:     { he: 'מדריך', en: 'Instructor' },
+    group:          { he: 'קבוצה', en: 'Group' },
+    cont:           { he: 'המשך', en: 'Continue' },
+    edit:           { he: 'עריכה', en: 'Edit' },
+    idInvalid:      { he: 'מספר תעודת הזהות אינו תקין. יש להזין עד 9 ספרות.', en: 'The ID number is not valid. Enter up to 9 digits.' },
+    genderRequired: { he: 'יש לבחור אפשרות.', en: 'Please choose an option.' },
+    cityRequired:   { he: 'יש להזין עיר מגורים', en: 'Please enter your city of residence' },
+    cityBadStart:   { he: 'שם העיר לא יכול להתחיל בתו = + - או @', en: 'The city name cannot start with = + - or @' },
+    confirmTitle:   { he: 'אישור פרטים', en: 'Confirm details' },
+    beforeContinue: { he: 'לפני שממשיכים', en: 'Before we continue' },
+    checkAll:       { he: 'בודקים שהכול נכון', en: 'Please check that everything is correct' },
+    cityShort:      { he: 'עיר', en: 'City' },
+    noQuestionsTitle: { he: 'אין שאלות עבורך', en: 'There are no questions for you' },
+    noQuestionsLead:  { he: 'בשאלון הזה אין שאלות שרלוונטיות לקבוצה שבחרת. אפשר לחזור ולבדוק את הפרטים, או לפנות למדריך/ה.', en: 'This questionnaire has no questions for the group you chose. You can go back and check your details, or ask your instructor.' },
+    backToDetails:  { he: 'חזרה לפרטים', en: 'Back to details' },
+    no:             { he: 'לא', en: 'No' },
+    yes:            { he: 'כן', en: 'Yes' },
+    ofScale:        { he: '{value} מתוך {max}', en: '{value} of {max}' },
+    errTimeout:     { he: 'החיבור לשרת לקח יותר מדי זמן.', en: 'The connection to the server took too long.' },
+    errNetwork:     { he: 'אין חיבור יציב לאינטרנט.', en: 'There is no stable internet connection.' },
+    errClosed:      { he: 'השאלון נסגר.', en: 'The questionnaire has closed.' },
+    errServer:      { he: 'השרת לא הצליח לטפל בבקשה.', en: 'The server could not handle the request.' },
+    errInvalid:     { he: 'חלק מהפרטים לא נקלטו כראוי. כדאי לפנות למדריך.', en: 'Some details were not accepted. Please ask your instructor.' },
+    errUnknown:     { he: 'אירעה תקלה לא צפויה.', en: 'An unexpected problem occurred.' },
+    thanks:         { he: 'תודה!', en: 'Thank you!' },
+    sentOk:         { he: 'התשובות שלך נשלחו בהצלחה.', en: 'Your answers were sent successfully.' },
+    sentStatus:     { he: 'נשלח', en: 'Sent' },
+    sendTitle:      { he: 'שליחה', en: 'Sending' },
+    sendFailStatus: { he: 'השליחה נכשלה', en: 'Sending failed' },
+    sendFailTitle:  { he: 'לא הצלחנו לשלוח', en: 'We could not send your answers' },
+    sendFailLead:   { he: 'לא קיבלנו אישור מהשרת. ייתכן שהתשובות כבר נשמרו, ואפשר לנסות שוב בבטחה.', en: 'We did not get a confirmation from the server. Your answers may already be saved, and trying again is safe.' }
+  };
+
+  var GENDER_EN = { 'בן': 'Male', 'בת': 'Female', 'מעדיף/ה לא לציין': 'Prefer not to say' };
+
+  // Before a language is chosen every screen is Hebrew (the English start
+  // button and its confirmation screen carry their own English text).
+  function t(key, vars) {
+    var entry = STRINGS[key];
+    var text = entry[lang || 'he'];
+    if (vars) {
+      Object.keys(vars).forEach(function (name) { text = text.split('{' + name + '}').join(vars[name]); });
+    }
+    return text;
+  }
+
+  function genderLabel_(value) {
+    return lang === 'en' && GENDER_EN[value] ? GENDER_EN[value] : value;
+  }
+
+  // Question wording: English when chosen and translated, else the Hebrew original.
+  function qText_(q) { return lang === 'en' && q.en_text ? q.en_text : q.text; }
+  function qLow_(q) { return lang === 'en' && q.en_anchor_low ? q.en_anchor_low : q.anchor_low; }
+  function qHigh_(q) { return lang === 'en' && q.en_anchor_high ? q.en_anchor_high : q.anchor_high; }
+
+  function setLanguage_(code) {
+    lang = code;
+    var dir = code === 'en' ? 'ltr' : 'rtl';
+    document.documentElement.lang = code;
+    document.documentElement.dir = dir;
+    document.body.dir = dir;
+    document.title = t('pageTitle');
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     loadDefinition_(1);
   });
@@ -39,7 +145,7 @@
   function loadDefinition_(attempt) {
     Api.getDefinition().then(onSurveyLoaded_, function (error) {
       if (isRetryableError_(error) && attempt < LOAD_MAX_ATTEMPTS) {
-        setWaitHint_('הטעינה מתעכבת, מנסים שוב...');
+        setWaitHint_(t('loadingSlow'));
         setTimeout(function () {
           loadDefinition_(attempt + 1);
         }, 2000 * attempt);
@@ -78,8 +184,6 @@
 
   var renderedThemeIndex = -1;
 
-  var SENDING_HINT = 'נא לא לסגור את המסך עד שההודעה תופיע.';
-  var LOADING_HINT = 'זה יכול לקחת כמה שניות.';
 
   function setSendingHint_(text) {
     setWaitHint_(text);
@@ -98,7 +202,7 @@
     brand.className = 'nz-hero__brand';
     var logo = document.createElement('img');
     logo.src = LOGO_URL;
-    logo.alt = 'ניצנים';
+    logo.alt = t('brand');
     brand.appendChild(logo);
     var rule = document.createElement('div');
     rule.className = 'nz-hero__brand-rule';
@@ -140,7 +244,7 @@
   // Shown while the final submission is in flight; it can take a while when
   // Google is slow, so it says so and asks not to close the page.
   function renderSendingScreen_() {
-    renderWaitScreen_('שולח...', SENDING_HINT);
+    renderWaitScreen_(t('sending'), t('sendingHint'));
   }
 
   // A message screen (survey closed, load failed, nothing to answer). The
@@ -162,7 +266,7 @@
 
     var eyebrow = document.createElement('p');
     eyebrow.className = 'nz-hero__eyebrow';
-    eyebrow.textContent = 'שאלון חניכים';
+    eyebrow.textContent = t('surveyName');
     hero.appendChild(eyebrow);
 
     var title = document.createElement('h1');
@@ -196,20 +300,20 @@
 
   function renderClosedScreen_() {
     renderMessageScreen_({
-      title: 'השאלון סגור כרגע',
-      lead: 'אי אפשר למלא את השאלון עכשיו. אם הוא אמור להיות פתוח, פנו למדריך/ה שלכם.',
-      status: 'סגור'
+      title: t('closedTitle'),
+      lead: t('closedLead'),
+      status: t('closedStatus')
     });
   }
 
   function onLoadError_(error) {
     renderMessageScreen_({
-      title: 'לא הצלחנו לטעון את השאלון',
-      lead: describeError_(error) + ' אפשר לנסות שוב.',
+      title: t('loadFailTitle'),
+      lead: describeError_(error) + ' ' + t('canRetry'),
       action: {
-        text: 'נסה שוב',
+        text: t('retry'),
         onClick: function () {
-          renderWaitScreen_('טוען את השאלון...', LOADING_HINT);
+          renderWaitScreen_(t('loading'), t('loadingHint'));
           loadDefinition_(1);
         }
       }
@@ -239,7 +343,9 @@
   function icon_(name) {
     var template = document.createElement('template');
     template.innerHTML = ICONS[name].trim();
-    return template.content.firstChild;
+    var el = template.content.firstChild;
+    if (name === 'arrow') el.classList.add('nz-icon-arrow');
+    return el;
   }
 
   function makeButton_(text, variant, iconName) {
@@ -290,11 +396,11 @@
     progress.className = 'nz-progress';
     if (totalCount) {
       progress.setAttribute('role', 'progressbar');
-      progress.setAttribute('aria-label', 'התקדמות בשאלון');
+      progress.setAttribute('aria-label', t('progressLabel'));
       progress.setAttribute('aria-valuemin', '0');
       progress.setAttribute('aria-valuemax', String(totalCount));
       progress.setAttribute('aria-valuenow', String(answeredCount));
-      progress.setAttribute('aria-valuetext', 'נענו ' + answeredCount + ' מתוך ' + totalCount + ' שאלות');
+      progress.setAttribute('aria-valuetext', t('progressText', { n: answeredCount, total: totalCount }));
     }
     for (var i = 0; i < totalSegments; i++) {
       var seg = document.createElement('div');
@@ -353,7 +459,7 @@
     brand.className = 'nz-hero__brand';
     var logo = document.createElement('img');
     logo.src = LOGO_URL;
-    logo.alt = 'ניצנים';
+    logo.alt = t('brand');
     brand.appendChild(logo);
     var rule = document.createElement('div');
     rule.className = 'nz-hero__brand-rule';
@@ -367,17 +473,17 @@
 
     var eyebrow = document.createElement('p');
     eyebrow.className = 'nz-hero__eyebrow';
-    eyebrow.textContent = 'שאלון חניכים';
+    eyebrow.textContent = t('surveyName');
     hero.appendChild(eyebrow);
 
     var title = document.createElement('h1');
     title.className = 'nz-hero__title';
-    title.textContent = 'ניצנים';
+    title.textContent = t('brand');
     hero.appendChild(title);
 
     var lead = document.createElement('p');
     lead.className = 'nz-hero__lead';
-    lead.textContent = 'כמה שאלות קצרות שעוזרות לנו להכיר אותך טוב יותר. אין תשובות נכונות או לא נכונות.';
+    lead.textContent = t('entryLead');
     hero.appendChild(lead);
 
     var timeRow = document.createElement('div');
@@ -386,15 +492,76 @@
     strong.textContent = estimateMinutes_();
     timeRow.appendChild(strong);
     var timeLabel = document.createElement('span');
-    timeLabel.textContent = 'דקות בערך';
+    timeLabel.textContent = t('minutes');
     timeRow.appendChild(timeLabel);
     hero.appendChild(timeRow);
 
     var actions = document.createElement('div');
-    actions.className = 'nz-actions';
-    var startButton = makeButton_('התחלה', 'on-dark', 'arrow');
-    startButton.addEventListener('click', renderDetailsStep_);
-    actions.appendChild(startButton);
+    actions.className = 'nz-actions nz-actions--stack';
+    // Choosing a start button chooses the language for the whole questionnaire;
+    // there is no way back to this screen, so it cannot be changed later.
+    [{ code: 'he', label: STRINGS.start.he }, { code: 'en', label: STRINGS.start.en }].forEach(function (option) {
+      var startButton = makeButton_(option.label, option.code === 'he' ? 'on-dark' : 'secondary-dark', 'arrow');
+      startButton.lang = option.code;
+      startButton.dir = option.code === 'en' ? 'ltr' : 'rtl';
+      startButton.addEventListener('click', function () {
+        if (option.code === 'en') {
+          renderEnglishConfirmScreen_();
+        } else {
+          setLanguage_('he');
+          renderDetailsStep_();
+        }
+      });
+      actions.appendChild(startButton);
+    });
+    hero.appendChild(actions);
+
+    app.appendChild(hero);
+  }
+
+  // Asked before English is locked in: the student may have tapped the wrong
+  // button. The text is in English with a Hebrew line, so either reader can
+  // follow it; "Back to Hebrew" returns to the entry screen.
+  function renderEnglishConfirmScreen_() {
+    var app = document.getElementById('app');
+    app.innerHTML = '';
+    scrollToTop_();
+
+    var hero = document.createElement('div');
+    hero.className = 'nz-hero nz-hero--entry';
+    hero.appendChild(buildBrandHeader_());
+
+    var art = document.createElement('div');
+    art.className = 'nz-hero__art';
+    art.appendChild(buildMark_('empty', 0));
+    hero.appendChild(art);
+
+    function block(tag, className, entryKey, code) {
+      var el = document.createElement(tag);
+      el.className = className;
+      el.lang = code;
+      el.dir = code === 'en' ? 'ltr' : 'rtl';
+      el.textContent = STRINGS[entryKey][code];
+      return el;
+    }
+    hero.appendChild(block('h1', 'nz-hero__title nz-hero__title--message', 'langConfirmTitle', 'en'));
+    hero.appendChild(block('p', 'nz-hero__lead', 'langConfirmLead', 'en'));
+    hero.appendChild(block('p', 'nz-hero__lead', 'langConfirmLead', 'he'));
+
+    var actions = document.createElement('div');
+    actions.className = 'nz-actions nz-actions--row';
+    var goButton = makeButton_(STRINGS.langConfirmGo.en, 'on-dark', 'arrow');
+    goButton.lang = 'en';
+    goButton.dir = 'ltr';
+    goButton.addEventListener('click', function () {
+      setLanguage_('en');
+      renderDetailsStep_();
+    });
+    var backButton = makeButton_(STRINGS.langConfirmBack.he, 'secondary-dark');
+    backButton.lang = 'he';
+    backButton.addEventListener('click', renderEntryScreen_);
+    actions.appendChild(goButton);
+    actions.appendChild(backButton);
     hero.appendChild(actions);
 
     app.appendChild(hero);
@@ -413,14 +580,14 @@
     row.className = 'nz-topbar__row';
     var eyebrow = document.createElement('div');
     eyebrow.className = 'nz-topbar__eyebrow';
-    eyebrow.textContent = 'שלב 1';
+    eyebrow.textContent = t('step1');
     var titleWrap = document.createElement('div');
     titleWrap.appendChild(eyebrow);
     var title = document.createElement('div');
     title.className = 'nz-topbar__title';
     title.setAttribute('role', 'heading');
     title.setAttribute('aria-level', '1');
-    title.textContent = 'פרטים אישיים';
+    title.textContent = t('personal');
     titleWrap.appendChild(title);
     row.appendChild(titleWrap);
     topbar.appendChild(row);
@@ -433,7 +600,7 @@
     var form = document.createElement('form');
     form.id = 'detailsForm';
 
-    var idField = makeLabeledInput_('id_number', 'תעודת זהות', true);
+    var idField = makeLabeledInput_('id_number', t('idNumber'), true);
     var idError = document.createElement('div');
     idError.id = 'id_number_error';
     idError.className = 'nz-error';
@@ -443,7 +610,7 @@
     idField.appendChild(idError);
     form.appendChild(idField);
 
-    form.appendChild(makeSegmented_('gender', 'מגדר', surveyDefinition.settingsLists.gender));
+    form.appendChild(makeSegmented_('gender', t('gender'), surveyDefinition.settingsLists.gender));
     var genderError = document.createElement('div');
     genderError.id = 'gender_error';
     genderError.className = 'nz-error';
@@ -452,7 +619,7 @@
     form.lastChild.querySelector('#gender').setAttribute('aria-describedby', 'gender_error');
 
     if (surveyDefinition.collectCity) {
-      var cityField = makeLabeledInput_('city', 'עיר מגורים', false);
+      var cityField = makeLabeledInput_('city', t('city'), false);
       cityField.querySelector('#city').maxLength = 60;   // the server refuses longer values
       form.appendChild(cityField);
     }
@@ -463,7 +630,7 @@
 
     var stepsHeading = document.createElement('h2');
     stepsHeading.className = 'nz-section-heading';
-    stepsHeading.textContent = 'בחירת קבוצה';
+    stepsHeading.textContent = t('chooseGroup');
     form.appendChild(stepsHeading);
 
     appendGroupSteps_(form);
@@ -474,7 +641,7 @@
 
     var actions = document.createElement('div');
     actions.className = 'nz-actions';
-    var submitButton = makeButton_('המשך', 'primary', 'arrow');
+    var submitButton = makeButton_(t('cont'), 'primary', 'arrow');
     submitButton.type = 'submit';
     actions.appendChild(submitButton);
     form.appendChild(actions);
@@ -517,9 +684,9 @@
     groupSelect.name = 'group_id';
     groupSelect.className = 'nz-select';
 
-    stepsWrap.appendChild(makeStepField_('01', 'מרחב', spaceSelect, 'done'));
-    stepsWrap.appendChild(makeStepField_('02', 'מדריך', instructorSelect, 'done'));
-    stepsWrap.appendChild(makeStepField_('03', 'קבוצה', groupSelect, 'active'));
+    stepsWrap.appendChild(makeStepField_('01', t('space'), spaceSelect, 'done'));
+    stepsWrap.appendChild(makeStepField_('02', t('instructor'), instructorSelect, 'done'));
+    stepsWrap.appendChild(makeStepField_('03', t('group'), groupSelect, 'active'));
 
     container.appendChild(stepsWrap);
 
@@ -616,14 +783,17 @@
   // ---------- Segmented control (used for gender) ----------
 
   // Radio-group keyboard behaviour for a row of buttons with role=radio: arrow
-  // keys move to the neighbouring option and choose it. The page is
-  // right-to-left, so the left arrow goes to the next option (to the left).
+  // keys move to the neighbouring option and choose it. In a right-to-left
+  // page the left arrow goes to the next option, in a left-to-right page the right arrow.
   function enableRadioArrows_(buttons) {
     buttons.forEach(function (button, index) {
       button.addEventListener('keydown', function (event) {
         var target = null;
-        if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') target = buttons[index + 1];
-        else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') target = buttons[index - 1];
+        var rtl = document.documentElement.dir !== 'ltr';
+        var nextKey = rtl ? 'ArrowLeft' : 'ArrowRight';
+        var prevKey = rtl ? 'ArrowRight' : 'ArrowLeft';
+        if (event.key === nextKey || event.key === 'ArrowDown') target = buttons[index + 1];
+        else if (event.key === prevKey || event.key === 'ArrowUp') target = buttons[index - 1];
         else if (event.key === 'Home') target = buttons[0];
         else if (event.key === 'End') target = buttons[buttons.length - 1];
         else return;
@@ -654,7 +824,7 @@
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.setAttribute('role', 'radio');
-      btn.textContent = optionText;
+      btn.textContent = genderLabel_(optionText);
       // No default: a student who skips the field must not be recorded as the first option.
       btn.setAttribute('aria-checked', 'false');
       btn.dataset.value = optionText;
@@ -692,14 +862,14 @@
     idInput.removeAttribute('aria-invalid');
 
     if (!isValidIsraeliId_(idNumberRaw)) {
-      idError.textContent = 'מספר תעודת הזהות אינו תקין. יש להזין עד 9 ספרות.';
+      idError.textContent = t('idInvalid');
       idInput.setAttribute('aria-invalid', 'true');
       return;
     }
 
     var genderGroup = form.querySelector('#gender');
     if (getSegmentedValue_(genderGroup) === null) {
-      document.getElementById('gender_error').textContent = 'יש לבחור אפשרות.';
+      document.getElementById('gender_error').textContent = t('genderRequired');
       genderGroup.setAttribute('aria-invalid', 'true');
       genderGroup.querySelector('button').focus();
       return;
@@ -710,8 +880,8 @@
       var cityValue = cityInput.value.trim();
       // Same rule as the server: a value starting with = + - @ would be stored as
       // a formula in the sheet, so it is refused there; say so here, at once.
-      var cityProblem = !cityValue ? 'יש להזין עיר מגורים'
-        : (/^[=+\-@]/.test(cityValue) || /[\u0000-\u001f\u007f]/.test(cityValue)) ? 'שם העיר לא יכול להתחיל בתו = + - או @'
+      var cityProblem = !cityValue ? t('cityRequired')
+        : (/^[=+\-@]/.test(cityValue) || /[\u0000-\u001f\u007f]/.test(cityValue)) ? t('cityBadStart')
         : '';
       if (cityProblem) {
         cityInput.setCustomValidity(cityProblem);
@@ -780,7 +950,7 @@
     title.className = 'nz-topbar__title';
     title.setAttribute('role', 'heading');
     title.setAttribute('aria-level', '1');
-    title.textContent = 'אישור פרטים';
+    title.textContent = t('confirmTitle');
     row.appendChild(title);
     topbar.appendChild(row);
     topbar.appendChild(renderProgressSegments_(surveyDefinition.themes.length, -1, 0));
@@ -791,12 +961,12 @@
 
     var title2 = document.createElement('h1');
     title2.className = 'nz-h1';
-    title2.textContent = 'לפני שממשיכים';
+    title2.textContent = t('beforeContinue');
     main.appendChild(title2);
 
     var subLine = document.createElement('p');
     subLine.className = 'nz-subline';
-    subLine.textContent = 'בודקים שהכול נכון';
+    subLine.textContent = t('checkAll');
     main.appendChild(subLine);
 
     var dl = document.createElement('dl');
@@ -815,23 +985,23 @@
       dl.appendChild(rowEl);
     }
 
-    addRow('תעודת זהות', studentDetails.id_number);
-    addRow('מגדר', studentDetails.gender);
+    addRow(t('idNumber'), studentDetails.id_number);
+    addRow(t('gender'), genderLabel_(studentDetails.gender));
     if (surveyDefinition.collectCity) {
-      addRow('עיר', studentDetails.city);
+      addRow(t('cityShort'), studentDetails.city);
     }
-    addRow('קבוצה', studentDetails.groupLabel + ' (' + studentDetails.instructor + ')');
+    addRow(t('group'), studentDetails.groupLabel + ' (' + studentDetails.instructor + ')');
 
     main.appendChild(dl);
 
     var actions = document.createElement('div');
     actions.className = 'nz-actions';
 
-    var continueButton = makeButton_('המשך', 'primary', 'arrow');
+    var continueButton = makeButton_(t('cont'), 'primary', 'arrow');
     continueButton.addEventListener('click', startThemeFlow_);
     actions.appendChild(continueButton);
 
-    var editButton = makeButton_('עריכה', 'secondary', 'edit');
+    var editButton = makeButton_(t('edit'), 'secondary', 'edit');
     editButton.addEventListener('click', renderDetailsStep_);
     actions.appendChild(editButton);
 
@@ -892,9 +1062,9 @@
 
     if (themeGroups.length === 0) {
       renderMessageScreen_({
-        title: 'אין שאלות עבורך',
-        lead: 'בשאלון הזה אין שאלות שרלוונטיות לקבוצה שבחרת. אפשר לחזור ולבדוק את הפרטים, או לפנות למדריך/ה.',
-        action: { text: 'חזרה לפרטים', icon: 'edit', onClick: renderDetailsStep_ }
+        title: t('noQuestionsTitle'),
+        lead: t('noQuestionsLead'),
+        action: { text: t('backToDetails'), icon: 'edit', onClick: renderDetailsStep_ }
       });
       return;
     }
@@ -968,9 +1138,9 @@
     var group = document.createElement('div');
     group.className = 'nz-segmented nz-segmented--choice';
     group.setAttribute('role', 'radiogroup');
-    group.setAttribute('aria-label', question.text);
+    group.setAttribute('aria-label', qText_(question));
     var buttons = [];
-    [{ label: 'לא', value: 1 }, { label: 'כן', value: scaleMax }].forEach(function (option) {
+    [{ label: t('no'), value: 1 }, { label: t('yes'), value: scaleMax }].forEach(function (option) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.setAttribute('role', 'radio');
@@ -999,7 +1169,7 @@
     questionText.className = 'nz-q__text';
     questionText.setAttribute('role', 'heading');
     questionText.setAttribute('aria-level', '1');
-    questionText.textContent = question.text;
+    questionText.textContent = qText_(question);
     body.appendChild(questionText);
 
     // Response time is measured only the first time a question is shown -
@@ -1011,7 +1181,7 @@
     var existingValue = answers[question.item_id];
     var selectedValue = existingValue;
 
-    var continueButton = makeButton_('המשך', 'primary', 'arrow');
+    var continueButton = makeButton_(t('cont'), 'primary', 'arrow');
     continueButton.disabled = existingValue === undefined;
 
     if (question.type === 'yesno') {
@@ -1026,7 +1196,7 @@
       var track = document.createElement('div');
       track.className = 'nz-scale__track';
       track.setAttribute('role', 'radiogroup');
-      track.setAttribute('aria-label', question.text);
+      track.setAttribute('aria-label', qText_(question));
 
       var nums = document.createElement('div');
       nums.className = 'nz-scale__nums';
@@ -1043,9 +1213,9 @@
           stop.setAttribute('role', 'radio');
           var isChecked = existingValue === value;
           stop.setAttribute('aria-checked', isChecked ? 'true' : 'false');
-          var ariaLabel = value + ' מתוך ' + scaleMax;
-          if (value === 1) ariaLabel += ', ' + question.anchor_low;
-          if (value === scaleMax) ariaLabel += ', ' + question.anchor_high;
+          var ariaLabel = t('ofScale', { value: value, max: scaleMax });
+          if (value === 1) ariaLabel += ', ' + qLow_(question);
+          if (value === scaleMax) ariaLabel += ', ' + qHigh_(question);
           stop.setAttribute('aria-label', ariaLabel);
           stop.addEventListener('click', function () {
             stopButtons.forEach(function (b) { b.setAttribute('aria-checked', 'false'); });
@@ -1073,9 +1243,9 @@
       var anchors = document.createElement('div');
       anchors.className = 'nz-scale__anchors';
       var lowAnchor = document.createElement('span');
-      lowAnchor.textContent = question.anchor_low;
+      lowAnchor.textContent = qLow_(question);
       var highAnchor = document.createElement('span');
-      highAnchor.textContent = question.anchor_high;
+      highAnchor.textContent = qHigh_(question);
       anchors.appendChild(lowAnchor);
       anchors.appendChild(highAnchor);
       scale.appendChild(anchors);
@@ -1126,6 +1296,7 @@
       class: studentDetails.class,
       major: studentDetails.major,
       device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+      language: lang || 'he',
       answers: answers,
       responseTimes: responseTimes,
       last_theme_completed: lastThemeCompleted || ''
@@ -1240,17 +1411,17 @@
     var code = (error && error.code) || 'unknown';
     var text;
     if (code === 'timeout') {
-      text = 'החיבור לשרת לקח יותר מדי זמן.';
+      text = t('errTimeout');
     } else if (code === 'network') {
-      text = 'אין חיבור יציב לאינטרנט.';
+      text = t('errNetwork');
     } else if (code === 'closed') {
-      text = 'השאלון נסגר.';
+      text = t('errClosed');
     } else if (code === 'server_error' || code === 'bad_response') {
-      text = 'השרת לא הצליח לטפל בבקשה.';
+      text = t('errServer');
     } else if (code.indexOf('invalid_') === 0) {
-      text = 'חלק מהפרטים לא נקלטו כראוי. כדאי לפנות למדריך.';
+      text = t('errInvalid');
     } else {
-      text = 'אירעה תקלה לא צפויה.';
+      text = t('errUnknown');
     }
     return text + ' (' + code + ')';
   }
@@ -1285,16 +1456,16 @@
 
   function scheduleSubmitRetry_(lastThemeCompleted, attempt) {
     var retry = function () {
-      setSendingHint_(SENDING_HINT);
+      setSendingHint_(t('sendingHint'));
       submitFinalAnswers_(lastThemeCompleted, attempt + 1);
     };
     if (navigator.onLine === false) {
-      setSendingHint_('אין חיבור לאינטרנט. השליחה תימשך אוטומטית כשהחיבור יחזור. נא לא לסגור את המסך.');
+      setSendingHint_(t('sendingOffline'));
       window.addEventListener('online', function () {
         setTimeout(retry, 1000);
       }, { once: true });
     } else {
-      setSendingHint_('החיבור איטי, מנסים שוב... נא לא לסגור את המסך.');
+      setSendingHint_(t('sendingSlow'));
       setTimeout(retry, 3000 * attempt);
     }
   }
@@ -1311,7 +1482,7 @@
     brand.className = 'nz-hero__brand';
     var logo = document.createElement('img');
     logo.src = LOGO_URL;
-    logo.alt = 'ניצנים';
+    logo.alt = t('brand');
     brand.appendChild(logo);
     var rule = document.createElement('div');
     rule.className = 'nz-hero__brand-rule';
@@ -1328,17 +1499,17 @@
     var title = document.createElement('h1');
     title.className = 'nz-hero__title';
     title.style.fontSize = 'var(--nz-fs-thanks)';
-    title.textContent = 'תודה!';
+    title.textContent = t('thanks');
     hero.appendChild(title);
 
     var message = document.createElement('p');
     message.className = 'nz-hero__lead';
-    message.textContent = 'התשובות שלך נשלחו בהצלחה.';
+    message.textContent = t('sentOk');
     hero.appendChild(message);
 
     var status = document.createElement('div');
     status.className = 'nz-hero__status';
-    status.textContent = 'נשלח';
+    status.textContent = t('sentStatus');
     hero.appendChild(status);
 
     app.appendChild(hero);
@@ -1357,7 +1528,7 @@
     title.className = 'nz-topbar__title';
     title.setAttribute('role', 'heading');
     title.setAttribute('aria-level', '1');
-    title.textContent = 'שליחה';
+    title.textContent = t('sendTitle');
     row.appendChild(title);
     topbar.appendChild(row);
     topbar.appendChild(renderProgressSegments_(themeGroups.length, themeGroups.length, 0));
@@ -1373,22 +1544,22 @@
 
     var status = document.createElement('div');
     status.className = 'nz-error-screen__status';
-    status.textContent = 'השליחה נכשלה';
+    status.textContent = t('sendFailStatus');
     screen.appendChild(status);
 
     var title2 = document.createElement('h1');
-    title2.textContent = 'לא הצלחנו לשלוח';
+    title2.textContent = t('sendFailTitle');
     screen.appendChild(title2);
 
     var message = document.createElement('p');
     message.textContent = isRetryableError_(error)
-      ? 'לא קיבלנו אישור מהשרת. ייתכן שהתשובות כבר נשמרו, ואפשר לנסות שוב בבטחה. ' + describeError_(error)
+      ? t('sendFailLead') + ' ' + describeError_(error)
       : describeError_(error);
     screen.appendChild(message);
 
     var actions = document.createElement('div');
     actions.className = 'nz-actions';
-    var retryButton = makeButton_('נסה שוב', 'primary', 'retry');
+    var retryButton = makeButton_(t('retry'), 'primary', 'retry');
     retryButton.addEventListener('click', function () {
       submitFinalAnswers_(lastThemeCompleted);
     });

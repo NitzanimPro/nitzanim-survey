@@ -58,7 +58,6 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; }
-  html { direction: rtl; }
   body { margin: 0; font-family: var(--nz-font); color: var(--nz-ink); background: var(--nz-white); }
   button, input, select { font-family: inherit; }
   :focus-visible { outline: 3px solid var(--nz-light-blue); outline-offset: 2px; }
@@ -109,8 +108,10 @@
     background: var(--nz-white); color: var(--nz-ink); font-size: 17px; width: 100%;
   }
   .nz-select { appearance: none; padding-inline-end: 40px; background-image: var(--nz-chevron); background-repeat: no-repeat; background-position: left 14px center; }
+  html[dir="ltr"] .nz-select { background-position: right 14px center; }
   .nz-input:focus, .nz-select:focus { outline: none; border: 2px solid var(--nz-blue); box-shadow: 0 0 0 3px var(--nz-xlight-blue); }
   .nz-input--id { font-family: var(--nz-mono); font-size: 18px; letter-spacing: .12em; direction: ltr; text-align: right; }
+  html[dir="ltr"] .nz-input--id { text-align: left; }
   .nz-input[aria-invalid="true"], .nz-select[aria-invalid="true"] { border: 2px solid var(--nz-red); }
   .nz-error { font-size: var(--nz-fs-caption); font-weight: 600; color: var(--nz-red); margin-top: 6px; }
 
@@ -175,7 +176,7 @@
   .nz-scale__nums span.is-selected { color: var(--nz-navy); font-weight: 700; }
   .nz-scale__anchors { display: flex; justify-content: space-between; gap: 16px; margin-top: 8px; font-size: var(--nz-fs-small); font-weight: 500; line-height: 1.35; color: var(--nz-ink-2); }
   .nz-scale__anchors span { max-width: 45%; }
-  .nz-scale__anchors span:last-child { text-align: left; }
+  .nz-scale__anchors span:last-child { text-align: end; }
   .nz-scale__hint { margin: 14px 0 0; text-align: center; font-size: var(--nz-fs-caption); color: var(--nz-ink-2); }
 
   /* ---------- Full-bleed navy screens ---------- */
@@ -262,3 +263,23 @@
     .nz-hero { align-items: center; }
     .nz-hero > * { width: 100%; max-width: 480px; }
   }
+
+/* ---------- English (left-to-right) and bilingual (pre-language) screens ---------- */
+html[dir="ltr"] .nz-step__num { margin-left: 0; margin-right: 12px; }
+html[dir="ltr"] .nz-icon-arrow, html[dir="ltr"] .nz-build, .nz-btn[lang="en"] .nz-icon-arrow { transform: scaleX(-1); }
+.nz-hero__title, .nz-hero__lead, .nz-hero__status, .nz-hero__eyebrow, .nz-hero__time span { white-space: pre-line; }
+/* The entry screen carries two languages and two start buttons: keep the buttons above the fold on phones */
+.nz-hero--entry { justify-content: flex-start; }
+.nz-hero--entry .nz-hero__art { flex: 0 1 auto; padding: 8px 0 12px; }
+.nz-hero--entry .nz-build { width: auto; max-height: 120px; }
+.nz-hero--entry .nz-hero__time { margin-top: 16px; }
+/* Two language start buttons side by side */
+.nz-actions--row { flex-direction: row; align-items: stretch; gap: 12px; }
+.nz-actions--row .nz-btn { flex: 1 1 0; min-width: 0; height: auto; min-height: 56px; padding-block: 10px; text-align: center; white-space: normal; line-height: 1.3; }
+.nz-actions--row .nz-btn svg { flex-shrink: 0; }
+/* Outlined button on the navy screens */
+.nz-btn--secondary-dark { background: transparent; color: var(--nz-white); border: 1.5px solid var(--nz-light-blue); font-weight: 700; }
+.nz-btn--secondary-dark:hover { background: rgba(123, 211, 247, .12); }
+/* Entry screen: Hebrew is the filled main button, English the outlined one beneath it */
+.nz-actions--stack { flex-direction: column; align-items: stretch; gap: 12px; }
+.nz-actions--stack .nz-btn { width: 100%; }
