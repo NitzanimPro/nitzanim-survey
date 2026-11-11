@@ -285,3 +285,8 @@ html[dir="ltr"] .nz-icon-arrow, html[dir="ltr"] .nz-build, .nz-btn[lang="en"] .n
 .nz-actions--stack .nz-btn { width: 100%; }
 /* English copy of the intro sentence on the entry screen */
 .nz-hero__lead--en { text-align: left; margin-top: 8px; }
+/* Passport box under the ID field (shown only after a digits-only number fails the ID check) */
+.nz-check { display: flex; align-items: center; gap: 12px; min-height: 48px; margin-top: 8px; }
+.nz-check[hidden] { display: none; }
+.nz-check input { width: 24px; height: 24px; flex-shrink: 0; accent-color: var(--nz-blue); }
+.nz-check label { font-size: 16px; font-weight: 600; color: var(--nz-navy); }

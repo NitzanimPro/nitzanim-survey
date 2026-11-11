@@ -73,6 +73,9 @@
     group:          { he: 'קבוצה', en: 'Group' },
     cont:           { he: 'המשך', en: 'Continue' },
     edit:           { he: 'עריכה', en: 'Edit' },
+    idNotValidPassport: { he: 'מספר הזהות אינו תקין. אם הקלדת מספר דרכון במקום תעודת זהות, סמנו וי.', en: 'The ID number is not valid. If you typed a passport number instead of an ID number, tick the box.' },
+    idPassportBox:  { he: 'הקלדתי מספר דרכון', en: 'I typed a passport number' },
+    passportNumber: { he: 'מספר דרכון', en: 'Passport number' },
     idInvalid:      { he: 'מספר תעודת הזהות אינו תקין. יש להזין עד 9 ספרות.', en: 'The ID number is not valid. Enter up to 9 digits.' },
     genderRequired: { he: 'יש לבחור אפשרות.', en: 'Please choose an option.' },
     cityRequired:   { he: 'יש להזין עיר מגורים', en: 'Please enter your city of residence' },
@@ -425,6 +428,30 @@
     return digitsOnly;
   }
 
+  // The identifier a student types: an Israeli ID number or a passport number.
+  // Same rule as the server (Validation.js, parseIdentifier_): 1-9 digits with a
+  // valid check digit is an ID; 5-20 letters/digits with a digit, or 10-20 digits,
+  // is a passport; 5-9 digits that fail the check digit are a passport only when
+  // the student ticked the passport box. Spaces and hyphens are ignored.
+  function parseIdentifier_(rawValue, passportConfirmed) {
+    var text = String(rawValue || '').trim().replace(/[\s-]+/g, '');
+    if (/^\d{1,9}$/.test(text)) {
+      if (isValidIsraeliId_(text)) return { value: padIdNumber_(text), type: 'id' };
+      if (passportConfirmed === true && text.length >= 5) return { value: text, type: 'passport' };
+      return null;
+    }
+    if (/^[A-Za-z0-9]{5,20}$/.test(text) && /\d/.test(text)) {
+      return { value: text.toUpperCase(), type: 'passport' };
+    }
+    return null;
+  }
+
+  // Digits only, 5-9 of them, and not a valid ID: the case where the passport box is offered.
+  function looksLikeNumericPassport_(rawValue) {
+    var text = String(rawValue || '').trim().replace(/[\s-]+/g, '');
+    return /^\d{5,9}$/.test(text) && !isValidIsraeliId_(text);
+  }
+
   function isValidIsraeliId_(rawValue) {
     var digitsOnly = String(rawValue || '').trim();
     if (!/^\d{1,9}$/.test(digitsOnly)) return false;
@@ -614,8 +641,28 @@
     idError.className = 'nz-error';
     // announced when it appears, and tied to the field for screen readers
     idError.setAttribute('role', 'alert');
-    idField.querySelector('#id_number').setAttribute('aria-describedby', 'id_number_error');
+    var idInputEl = idField.querySelector('#id_number');
+    idInputEl.setAttribute('aria-describedby', 'id_number_error');
+    idInputEl.setAttribute('autocomplete', 'off');
+    idInputEl.setAttribute('autocapitalize', 'characters');
+    idInputEl.setAttribute('spellcheck', 'false');
+    idInputEl.maxLength = 30;
     idField.appendChild(idError);
+
+    // Offered only after a number of digits fails the ID check digit: a passport
+    // made of digits only cannot be told apart from a mistyped ID otherwise.
+    var passportBox = document.createElement('div');
+    passportBox.className = 'nz-check';
+    passportBox.hidden = true;
+    var passportCheckbox = document.createElement('input');
+    passportCheckbox.type = 'checkbox';
+    passportCheckbox.id = 'id_is_passport';
+    var passportLabel = document.createElement('label');
+    passportLabel.setAttribute('for', 'id_is_passport');
+    passportLabel.textContent = t('idPassportBox');
+    passportBox.appendChild(passportCheckbox);
+    passportBox.appendChild(passportLabel);
+    idField.appendChild(passportBox);
     form.appendChild(idField);
 
     form.appendChild(makeSegmented_('gender', t('gender'), surveyDefinition.settingsLists.gender));
@@ -655,10 +702,20 @@
     form.appendChild(actions);
 
     var idInput = form.querySelector('#id_number');
+    var idTouched = !!studentDetails;   // an edited form was already filled in
     function refreshSubmitState_() {
-      submitButton.disabled = !isValidIsraeliId_(idInput.value);
+      // Offer the passport box once nine digits were typed, or when the field is left.
+      var digitsLength = idInput.value.trim().replace(/[\s-]+/g, '').length;
+      var offerBox = looksLikeNumericPassport_(idInput.value) && (digitsLength === 9 || idTouched);
+      passportBox.hidden = !offerBox;
+      if (!offerBox) passportCheckbox.checked = false;
+      idError.textContent = offerBox && !passportCheckbox.checked ? t('idNotValidPassport') : '';
+      submitButton.disabled = !parseIdentifier_(idInput.value, passportCheckbox.checked);
     }
     idInput.addEventListener('input', refreshSubmitState_);
+    idInput.addEventListener('blur', function () { idTouched = true; refreshSubmitState_(); });
+    passportCheckbox.addEventListener('change', refreshSubmitState_);
+    if (studentDetails && studentDetails.idIsPassport) passportCheckbox.checked = true;
     refreshSubmitState_();
 
     form.addEventListener('submit', function (event) {
@@ -869,7 +926,9 @@
     idError.textContent = '';
     idInput.removeAttribute('aria-invalid');
 
-    if (!isValidIsraeliId_(idNumberRaw)) {
+    var passportChecked = form.querySelector('#id_is_passport').checked;
+    var identifier = parseIdentifier_(idNumberRaw, passportChecked);
+    if (!identifier) {
       idError.textContent = t('idInvalid');
       idInput.setAttribute('aria-invalid', 'true');
       return;
@@ -914,7 +973,9 @@
     })[0];
 
     studentDetails = {
-      id_number: padIdNumber_(idNumberRaw),
+      id_number: identifier.value,
+      idType: identifier.type,
+      idIsPassport: passportChecked && identifier.type === 'passport',
       gender: getSegmentedValue_(document.getElementById('gender')),
       city: surveyDefinition.collectCity ? form.querySelector('#city').value.trim() : '',
       group_id: group.group_id,
@@ -993,7 +1054,7 @@
       dl.appendChild(rowEl);
     }
 
-    addRow(t('idNumber'), studentDetails.id_number);
+    addRow(t(studentDetails.idType === 'passport' ? 'passportNumber' : 'idNumber'), studentDetails.id_number);
     addRow(t('gender'), genderLabel_(studentDetails.gender));
     if (surveyDefinition.collectCity) {
       addRow(t('cityShort'), studentDetails.city);
@@ -1295,6 +1356,7 @@
       session_id: sessionId,
       started_at: startedAt,
       id_number: studentDetails.id_number,
+      id_is_passport: studentDetails.idIsPassport === true,
       gender: studentDetails.gender,
       city: studentDetails.city,
       group_id: studentDetails.group_id,
